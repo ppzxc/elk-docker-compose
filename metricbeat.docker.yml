@@ -27,7 +27,7 @@ metricbeat.modules:
   enabled: true
 
 setup:
-  kibana.host: "172.22.0.1:9200"
+  kibana.host: "172.18.0.1:9200"
   template.settings:
     index.number_of_shards: 1
     index.codec: best_compression
@@ -37,7 +37,7 @@ setup:
     retry.enabled: true
 
 output.elasticsearch:
-  hosts: ["172.22.0.1:9200"]
+  hosts: ["172.18.0.1:9200"]
 
 backoff.init: 5s
 

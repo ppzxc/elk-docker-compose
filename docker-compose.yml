@@ -116,6 +116,7 @@ services:
       - cap-add=sys_ptrace
       - cap-add=dac_read_search
     command: ["--strict.perms=false", "-system.hostfs=/hostfs"]
+
     network_mode: host
     healthcheck:
       test: metricbeat test config
