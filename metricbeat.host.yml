@@ -1,0 +1,72 @@
+metricbeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.period: 30s
+  reload.enabled: false
+
+metricbeat.max_start_delay: 30s
+
+metricbeat.modules:
+- module: system
+  metricsets:
+    - cpu
+    - load
+    - memory
+    - network
+    - process
+    - process_summary
+    - socket
+    - socket_summary
+    - uptime
+    - core
+    - diskio
+    - filesystem
+    - fsstat
+    #- raid
+enabled: true
+period: 10s
+processes: ['.*']
+
+cpu.metrics: ["percentages"]
+core.metrics: ["percentages"]
+
+#- module: kibana
+#  metricsets: ["status"]
+#  period: 10s
+#  hosts: ["172.22.0.1:5601"]
+#  basepath: ""
+#  enabled: true
+  
+#- module: logstash
+#  metricsets: ["node", "node_stats"]
+#  period: 10s
+#  hosts: ["172.22.0.1:5044"]
+#  enabled: true
+
+setup:
+  kibana.host: "localhost:5601"
+  dashboards:
+    enabled: true
+    always_kibana: true
+    retry.enabled: true
+  template.settings:
+    index.number_of_shards: 1
+    index.codec: best_compression
+
+output.elasticsearch:
+  hosts: ["localhost:9200"]
+
+backoff.init: 5s
+
+backoff.mac: 60s
+
+processors:
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_host_metadata: ~
+  - add_kubernetes_metadata: ~
+
+#output.logstash:
+#  hosts: ["localhost:5044"]
+#  username: '${ELASTICSEARCH_USERNAME:}'
+#  password: '${ELASTICSEARCH_PASSWORD:}'
+
