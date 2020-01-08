@@ -148,5 +148,6 @@ volumes:
 
 networks:
   elastic-network:
-    external: 
-      name: elastic-network
+    driver: bridge
+#    external: 
+#      name: elastic-network
