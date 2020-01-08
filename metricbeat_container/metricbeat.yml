@@ -1,0 +1,179 @@
+metricbeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.period: 10s
+  reload.enabled: false
+
+metricbeat.max_start_delay: 10s
+#metricbeat.autodiscover:
+#  providers:
+#    - type: docker
+#      templates:
+#        - condition:
+#            equals.docker.container.image: etcd
+#          config:
+#            - module: etcd
+#              metricsets: ["leader", "self", "store"]
+#              period: 10s
+#              hosts: ["${host}:2379"]
+#
+#==========================  Modules configuration =============================
+#---------------------------- Elasticsearch Module ----------------------------
+metricbeat.modules:
+- module: elasticsearch
+  metricsets:
+    - node
+    - node_stats
+    - index
+    - index_recovery
+    - index_summary
+    - shard
+    - ml_job
+  period: 10s
+  hosts: ["http://172.18.0.1:9200"]
+# username: "elastic"
+# password: "changeme"
+# ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+# index_recovery.active_only: true
+# xpack.enabled: false
+
+#--------------------------------- Beat Module ---------------------------------
+#- module: beat
+#  metricsets:
+#    - stats
+#    - state
+#  period: 10s
+#  hosts: ["http://127.0.0.1:5066"]
+#ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+#xpack.enabled: false
+
+#-------------------------------- Kibana Module --------------------------------
+- module: kibana
+  metricsets: ["status"]
+  period: 10s
+  hosts: ["172.18.0.1:5601"]
+  basepath: ""
+  enabled: true
+#xpack.enabled: false
+
+#------------------------------- Logstash Module -------------------------------
+- module: logstash
+  metricsets: ["node", "node_stats"]
+  enabled: true
+  period: 10s
+  hosts: ["172.18.0.1:9600"]
+#-------------------------------- Redis Module --------------------------------
+##- module: redis
+##  metricsets: ["info", "keyspace"]
+##  enabled: true
+##  period: 10s
+#
+#  # Redis hosts
+#  #  hosts: ["127.0.0.1:6379"]
+#
+#    # Timeout after which time a metricset should return an error
+#      # Timeout is by default defined as period, as a fetch of a metricset
+#        # should never take longer then period, as otherwise calls can pile up.
+#          #timeout: 1s
+#
+#            # Optional fields to be added to each event
+#              #fields:
+#                #  datacenter: west
+#
+#                  # Network type to be used for redis connection. Default: tcp
+#                    #network: tcp
+#
+#                      # Max number of concurrent connections. Default: 10
+#                        #maxconn: 10
+#
+#                          # Filters can be used to reduce the number of fields sent.
+#                            #processors:
+#                              #  - include_fields:
+#                                #      fields: ["beat", "metricset", "redis.info.stats"]
+#
+#                                  # Redis AUTH password. Empty by default.
+#                                    #password: foobared
+#
+#================================ Outputs ======================================
+#-------------------------- Elasticsearch output -------------------------------
+output.elasticsearch:
+  #enabled: true
+  hosts: ["172.18.0.1:9200"]
+  #compression_level: 0
+  #escape_html: false
+  #protocol: "https"
+  #api_key: "id:api_key"
+  #username: "elastic"
+  #password: "changeme"
+  #parameters:
+    #param1: value1
+    #param2: value2
+  #worker: 1
+  #index: "metricbeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+  #pipeline: ""
+  #path: "/elasticsearch"
+  #headers:
+  #proxy_url: http://proxy:3128
+  #proxy_disable: false
+  #max_retries: 3
+  #bulk_max_size: 50
+  #backoff.init: 1s
+  #backoff.max: 60s
+  #timeout: 90
+  #ssl.enabled: true
+  #ssl.verification_mode: full
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
+  #ssl.renegotiation: never
+
+setup.dashboards.enabled: true
+#setup.dashboards.directory: ${path.home}/kibana
+#setup.dashboards.url:
+#setup.dashboards.file:
+#setup.dashboards.beat: metricbeat
+#setup.dashboards.kibana_index: .kibana
+#setup.dashboards.index:
+setup.dashboards.always_kibana: true
+setup.dashboards.retry.enabled: true
+#setup.dashboards.retry.interval: 1s
+#setup.dashboards.retry.maximum: 0
+
+#============================== Kibana =====================================
+setup.kibana:
+  host: "172.18.0.1:5601"
+  #protocol: "https"
+  #username: "elastic"
+  #password: "changeme"
+  #path: ""
+  #ssl.enabled: true
+  #ssl.verification_mode: full
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
+
+#================================ Logging ======================================
+logging.level: info
+#logging.selectors: [ ]
+#logging.to_stderr: false
+#logging.to_syslog: false
+#logging.to_eventlog: false
+#logging.metrics.enabled: true
+#logging.metrics.period: 30s
+logging.to_files: true
+logging.files:
+  path: /var/log/metricbeat
+  name: metricbeat
+  #rotateeverybytes: 10485760 # = 10MB
+  keepfiles: 2
+  permissions: 0644
+  #interval: 0
+#logging.json: false
+

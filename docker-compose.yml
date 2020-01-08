@@ -1,4 +1,4 @@
-version: '3.3'
+version: '2.2'
 services:
   es01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
@@ -7,11 +7,11 @@ services:
       - network.host=_site_
       - node.name=es01
       - cluster.name=es-docker-cluster
-      - cluster.initial_master_nodes=es01,es02,es03
       - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
       - bootstrap.memory_lock=true
       - /etc/localtime:/etc/localtime:ro
-      - "ES_JAVA_OPTS=-Xms2506m -Xmx2506m"
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
     ulimits:
       memlock:
         soft: -1
@@ -27,6 +27,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+
   es02:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
     container_name: es02
@@ -34,11 +35,11 @@ services:
       - network.host=_site_
       - node.name=es02
       - cluster.name=es-docker-cluster
-      - cluster.initial_master_nodes=es01,es02,es03
       - discovery.seed_hosts=es01,es03
+      - cluster.initial_master_nodes=es01,es02,es03
       - bootstrap.memory_lock=true
       - /etc/localtime:/etc/localtime:ro
-      - "ES_JAVA_OPTS=-Xms2506m -Xmx2506m"
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
     ulimits:
       memlock:
         soft: -1
@@ -47,6 +48,7 @@ services:
       - data02:/usr/share/elasticsearch/data
     networks:
       - elastic-network
+
   es03:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
     container_name: es03
@@ -54,11 +56,11 @@ services:
       - network.host=_site_
       - node.name=es03
       - cluster.name=es-docker-cluster
-      - cluster.initial_master_nodes=es01,es02,es03
       - discovery.seed_hosts=es01,es02
+      - cluster.initial_master_nodes=es01,es02,es03
       - bootstrap.memory_lock=true
       - /etc/localtime:/etc/localtime:ro
-      - "ES_JAVA_OPTS=-Xms2506m -Xmx2506m"
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
     ulimits:
       memlock:
         soft: -1
@@ -75,19 +77,14 @@ services:
       - server.host=_site_
       - elasticsearch.hosts=_site_
     volumes:
-      - ./kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
       - "5601:5601"
     networks:
       - elastic-network
     depends_on: ['es01']
-    healthcheck:
-      test: curl -s https://localhost:5601/_cluster/health >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
+   
   logstash_indexer:
     image: docker.elastic.co/logstash/logstash:7.5.1
     container_name: logstash_indexer
@@ -96,44 +93,45 @@ services:
       - ./logstash/pipeline/:/usr/share/logstash/pipeline:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
+      - "9600:9600"
       - "5044:5044"
     environment:
       LS_JAVA_OPTS: "-Xmx1024m -Xms1024m"
     networks:
       - elastic-network
-    depends_on: ['es01', 'es02', 'es03']
-  
+    depends_on: ['es01', 'es02', 'es03', 'kibana']
+
   metricbeat_host:
-    image: docker.elastic.co/beats/metricbeat:7.5.1
+    build: ./metricbeat_host
     container_name: metricbeat_host
+    command: -e
     user: root
     volumes:
-      - ./metricbeat.host.yml:/usr/share/metricbeat/metricbeat.yml:ro
       - /proc:/hostfs/proc:ro
       - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
       - /:/hostfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - cap-add=sys_ptrace
       - cap-add=dac_read_search
-    command: ["--strict.perms=false", "-system.hostfs=/hostfs"]
-
     network_mode: host
+    depends_on: ['es01', 'es02', 'es03', 'kibana', 'logstash_indexer']
     healthcheck:
       test: metricbeat test config
       interval: 30s
       timeout: 15s
       retries: 5
-
-  metricbeat_docker:
-    image: docker.elastic.co/beats/metricbeat:7.5.1
-    container_name: metricbeat_docker
+    
+  metricbeat_container:
+    build: ./metricbeat_container
+    container_name: metricbeat_container
+    command: -e
     user: root
-    volumes:
-      - ./metricbeat.docker.yml:/usr/share/metricbeat/metricbeat.yml:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on: ['es01', 'es02', 'es03', 'kibana', 'logstash_indexer']
+    environment:
+      - http.enabled=true
     networks:
       - elastic-network
-    depends_on: ['es01', 'es02', 'es03', 'kibana', 'logstash_indexer']
     healthcheck:
       test: metricbeat test config
       interval: 30s
