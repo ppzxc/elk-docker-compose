@@ -7,6 +7,14 @@ processors:
   - add_cloud_metadata: ~
   - add_docker_metadata: ~
 
+setup.template.settings:
+  index:
+    number_of_shards: 2
+    codec: best_compression
+    #number_of_routing_shards: 30
+    #_source:
+    #enabled: false
+
 metricbeat.max_start_delay: 10s
 #metricbeat.autodiscover:
 #  providers:
@@ -85,7 +93,7 @@ metricbeat.modules:
 #-------------------------- Elasticsearch output -------------------------------
 output.elasticsearch:
   #enabled: true
-  hosts: ["localhost:9200"]
+  hosts: ["http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200"]
   #compression_level: 0
   #escape_html: false
   #protocol: "https"
@@ -132,7 +140,7 @@ setup.dashboards.retry.enabled: true
 
 #============================== Kibana =====================================
 setup.kibana:
-  host: "localhost:5601"
+  host: "172.18.0.9:5601"
   #protocol: "https"
   #username: "elastic"
   #password: "changeme"
@@ -148,7 +156,7 @@ setup.kibana:
   #ssl.curve_types: []
 
 #================================ Logging ======================================
-logging.level: info
+logging.level: warn
 #logging.selectors: [ ]
 #logging.to_stderr: false
 #logging.to_syslog: false
@@ -164,4 +172,4 @@ logging.files:
   permissions: 0644
   #interval: 0
 #logging.json: false
-
+xpack.monitoring.enabled: true
