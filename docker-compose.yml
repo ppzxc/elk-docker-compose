@@ -1,49 +1,54 @@
 version: '2.2'
 services:
-  es-redis:
+  redis-es:
     build: ./redis
     image: es-redis:5.0.7
-    container_name: es-redis
+    container_name: redis-es
     sysctls:
       - net.core.somaxconn=511
     ports:
-      - 8479:6379
+      - 8579:6379
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - /data/redis/:/data
     networks:
       elastic-network:
         ipv4_address: 172.18.0.12
 
-  grafana:
+  grafana-es:
     image: grafana/grafana:6.5.2
-    container_name: grafana
+    container_name: grafana-es
     ports:
       - "8430:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=secret
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     networks:
       elastic-network:
         ipv4_address: 172.18.0.13
     depends_on:
-      - master01
+      - es-mt01
 
-  master01:
+  es-mt01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
-    container_name: master01
+    container_name: es-mt01
     environment:
       - network.host=_site_
-      - node.name=master01
+      - node.name=es-mt01
       - node.master=true
       - node.data=false
       - node.ingest=false
       - cluster.remote.connect=false
       - cluster.name=nanoit-log-cluster
-      - discovery.seed_hosts=master02,master03
-      - cluster.initial_master_nodes=master01,master02,master03
+      - discovery.seed_hosts=es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
+#      - xpack.security.transport.ssl.enabled=true
+#      - xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
     ulimits:
       memlock:
         soft: -1
@@ -62,23 +67,25 @@ services:
       timeout: 10s
       retries: 5
 
-  master02:
+  es-mt02:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
-    container_name: master02
+    container_name: es-mt02
     environment:
       - network.host=_site_
-      - node.name=master02
+      - node.name=es-mt02
       - node.master=true
       - node.data=false
       - node.ingest=false
       - cluster.remote.connect=false
       - cluster.name=nanoit-log-cluster
-      - discovery.seed_hosts=master01,master03
-      - cluster.initial_master_nodes=master01,master02,master03
+      - discovery.seed_hosts=es-mt01,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
     ulimits:
       memlock:
         soft: -1
@@ -90,23 +97,25 @@ services:
       elastic-network:
         ipv4_address: 172.18.0.3
 
-  master03:
+  es-mt03:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
-    container_name: master03
+    container_name: es-mt03
     environment:
       - network.host=_site_
-      - node.name=master03
+      - node.name=es-mt03
       - node.master=true
       - node.data=false
       - node.ingest=false
       - cluster.remote.connect=false
       - cluster.name=nanoit-log-cluster
-      - discovery.seed_hosts=master01,master02
-      - cluster.initial_master_nodes=master01,master02,master03
+      - discovery.seed_hosts=es-mt01,es-mt02
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
     ulimits:
       memlock:
         soft: -1
@@ -118,23 +127,25 @@ services:
       elastic-network:
         ipv4_address: 172.18.0.4
 
-  coordinate01:
+  es-cdn01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
-    container_name: coordinate01
+    container_name: es-cdn01
     environment:
       - network.host=_site_
-      - node.name=coordinate01
+      - node.name=es-cdn01
       - node.master=false
       - node.data=false
       - node.ingest=false
       - cluster.remote.connect=false
       - cluster.name=nanoit-log-cluster
-      - discovery.seed_hosts=master01,master02,master03
-      - cluster.initial_master_nodes=master01,master02,master03
+      - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
     ulimits:
       memlock:
         soft: -1
@@ -146,23 +157,25 @@ services:
       elastic-network:
         ipv4_address: 172.18.0.5
 
-  coordinate02:
+  es-cdn02:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
-    container_name: coordinate02
+    container_name: es-cdn02
     environment:
       - network.host=_site_
-      - node.name=coordinate02
+      - node.name=es-cdn02
       - node.master=false
       - node.data=false
       - node.ingest=false
       - cluster.remote.connect=false
       - cluster.name=nanoit-log-cluster
-      - discovery.seed_hosts=master01,master02,master03
-      - cluster.initial_master_nodes=master01,master02,master03
+      - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
     ulimits:
       memlock:
         soft: -1
@@ -174,23 +187,25 @@ services:
       elastic-network:
         ipv4_address: 172.18.0.6
 
-  data01:
+  es-data01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
-    container_name: data01
+    container_name: es-data01
     environment:
       - network.host=_site_
-      - node.name=data01
+      - node.name=es-data01
       - node.master=false
       - node.data=true
       - node.ingest=false
       - cluster.remote.connect=false
       - cluster.name=nanoit-log-cluster
-      - discovery.seed_hosts=master01,master02,master03
-      - cluster.initial_master_nodes=master01,master02,master03
+      - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
-      - "ES_JAVA_OPTS=-Xms8g -Xmx8g"
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
     ulimits:
       memlock:
         soft: -1
@@ -202,23 +217,25 @@ services:
       elastic-network:
         ipv4_address: 172.18.0.7
 
-  data02:
+  es-data02:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
-    container_name: data02
+    container_name: es-data02
     environment:
       - network.host=_site_
-      - node.name=data02
+      - node.name=es-data02
       - node.master=false
       - node.data=true
       - node.ingest=false
       - cluster.remote.connect=false
       - cluster.name=nanoit-log-cluster
-      - discovery.seed_hosts=master01,master02,master03
-      - cluster.initial_master_nodes=master01,master02,master03
+      - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
-      - "ES_JAVA_OPTS=-Xms8g -Xmx8g"
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
     ulimits:
       memlock:
         soft: -1
@@ -230,20 +247,52 @@ services:
       elastic-network:
         ipv4_address: 172.18.0.8
 
-  ingest01:
+  es-data03:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
-    container_name: ingest01
+    container_name: es-data03
     environment:
       - network.host=_site_
-      - node.name=ingest01
+      - node.name=es-data03
+      - node.master=false
+      - node.data=true
+      - node.ingest=false
+      - cluster.remote.connect=false
+      - cluster.name=nanoit-log-cluster
+      - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
+      - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
+      - xpack.monitoring.enabled=true
+      - xpack.monitoring.collection.enabled=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /data/elasticsearch/data03/:/usr/share/elasticsearch/data
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.15
+
+  es-ing01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    container_name: es-ing01
+    environment:
+      - network.host=_site_
+      - node.name=es-ing01
       - node.master=false
       - node.data=false
       - node.ingest=true
       - cluster.remote.connect=false
       - cluster.name=nanoit-log-cluster
-      - discovery.seed_hosts=master01,master02,master03
-      - cluster.initial_master_nodes=master01,master02,master03
+      - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
@@ -258,9 +307,9 @@ services:
       elastic-network:
         ipv4_address: 172.18.0.14
 
-  kibana:
+  es-kib:
     image: docker.elastic.co/kibana/kibana:7.5.1
-    container_name: kibana
+    container_name: es-kib
     environment:
       - server.host=_site_
       - elasticsearch.hosts=_site_
@@ -272,12 +321,12 @@ services:
     networks:
       elastic-network:
         ipv4_address: 172.18.0.9
-    depends_on: ['master01', 'master02', 'master03', 'coordinate01', 'coordinate02', 'data01', 'data02', 'ingest01']
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03', 'es-ing01']
    
-  logstash_indexer:
+  es-lgs-idx:
     build: ./logstash
-    image: logstash_indexer:7.5.1
-    container_name: logstash_indexer
+    image: logstash:7.5.1
+    container_name: es-lgs-idx
     volumes:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
       - ./logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
@@ -288,48 +337,52 @@ services:
     networks:
       elastic-network:
         ipv4_address: 172.18.0.10
-    depends_on: ['master01', 'master02', 'master03', 'coordinate01', 'coordinate02', 'data01', 'data02', 'kibana', 'ingest01']
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03', 'es-ing01', 'es-kib']
 
-  metricbeat_host:
+  es-mtb-host:
     build: ./metricbeat_host
     image: metricbeat_host:7.5.1
-    container_name: metricbeat_host
+    container_name: es-mtb-host
     command: -e
     user: root
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - /proc:/hostfs/proc:ro
       - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
       - /:/hostfs:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
+      - name=LOG-MONITOR-SERVER
       - cap-add=sys_ptrace
       - cap-add=dac_read_search
     network_mode: host
-    depends_on: ['master01', 'master02', 'master03', 'coordinate01', 'coordinate02', 'data01', 'data02', 'kibana', 'logstash_indexer', 'ingest01']
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-lgs-idx', 'es-ing01', 'es-data03']
     healthcheck:
       test: metricbeat test config
       interval: 30s
       timeout: 15s
       retries: 5
     
-  metricbeat_container:
-    build: ./metricbeat_container
-    image: metricbeat_container:7.5.1
-    container_name: metricbeat_container
-    command: -e
-    user: root
-    depends_on: ['master01', 'master02', 'master03', 'coordinate01', 'coordinate02', 'data01', 'data02', 'kibana', 'logstash_indexer', 'ingest01']
-    environment:
-      - http.enabled=true
-    networks:
-    networks:
-      elastic-network:
-        ipv4_address: 172.18.0.11
-    healthcheck:
-      test: metricbeat test config
-      interval: 30s
-      timeout: 15s
-      retries: 5
+      #es-mtb-ctn:
+      #build: ./metricbeat_container
+      #image: metricbeat_container:7.5.1
+      #container_name: es-mtb-ctn
+      #command: -e
+      #user: root
+      #depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-lgs-idx', 'es-ing01', 'es-data03']
+      #environment:
+      #- http.enabled=true
+      #- name=LOG-MONITOR-SERVER
+      #volumes:
+      #- /etc/localtime:/etc/localtime:ro
+      #networks:
+      #elastic-network:
+      #ipv4_address: 172.18.0.11
+      #healthcheck:
+      #test: metricbeat test config
+      #interval: 30s
+      #timeout: 15s
+      #retries: 5
 
 networks:
   elastic-network:

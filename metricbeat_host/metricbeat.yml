@@ -3,13 +3,20 @@ metricbeat.config.modules:
   reload.period: 10s
   reload.enabled: false
 
+  #setup.template:
+  #name: "metricbeat"
+  #pattern: "metricbeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+  #enabled: false
+
 processors:
   - add_cloud_metadata: ~
   - add_docker_metadata: ~
+  - add_host_metadata: ~
+  - add_kubernetes_metadata: ~
 
 setup.template.settings:
   index:
-    number_of_shards: 2
+    number_of_shards: 3
     codec: best_compression
     #number_of_routing_shards: 30
     #_source:
@@ -55,8 +62,8 @@ metricbeat.modules:
   #filesystem.ignore_types: []
   process.include_top_n:
     enabled: true
-    #by_cpu: 0
-    #by_memory: 0
+    by_cpu: 20
+    by_memory: 20
   #process.cmdline.cache.enabled: true
   #process.cgroups.enabled: true
   #process.env.whitelist: []
@@ -89,11 +96,71 @@ metricbeat.modules:
     #certificate:           "/etc/pki/client/cert.pem"
     #key:                   "/etc/pki/client/cert.key"
 
-#================================ Outputs ======================================
-#-------------------------- Elasticsearch output -------------------------------
-output.elasticsearch:
-  #enabled: true
+#---------------------------- Elasticsearch Module ----------------------------
+metricbeat.modules:
+- module: elasticsearch
+  metricsets:
+    - node
+    - node_stats
+    - index
+    - index_recovery
+    - index_summary
+    - shard
+    #- ml_job
+  period: 10s
   hosts: ["http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200"]
+# username: "elastic"
+# password: "changeme"
+# ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+# index_recovery.active_only: true
+#xpack.enabled: false
+
+#--------------------------------- Beat Module ---------------------------------
+#- module: beat
+#  metricsets:
+#    - stats
+#    - state
+#  period: 10s
+#  hosts: ["http://127.0.0.1:5066"]
+#ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+#xpack.enabled: false
+
+#-------------------------------- Kibana Module --------------------------------
+- module: kibana
+  metricsets: ["status"]
+  period: 10s
+  hosts: ["172.18.0.9:5601"]
+  basepath: ""
+  enabled: true
+  #xpack.enabled: false
+
+#------------------------------- Logstash Module -------------------------------
+- module: logstash
+  metricsets: ["node", "node_stats"]
+  enabled: true
+  period: 10s
+  hosts: ["172.18.0.10:9600"]
+#-------------------------------- Redis Module --------------------------------
+- module: redis
+  metricsets: ["info", "keyspace"]
+  enabled: true
+  period: 10s
+  hosts: ["172.18.0.12:6379"]
+  timeout: 1s
+  password: Y&hZ&lgooHaW 
+
+#================================ Outputs ======================================
+#-------------------------- Elasticsearch output ------------------------------
+output.redis:
+  hosts: ["39.116.31.200:8579"]
+  password: Y&hZ&lgooHaW
+  key: "metricbeat"
+  db: 0
+  timeout: 5
+#-------------------------- Elasticsearch output -------------------------------
+#output.elasticsearch:
+  #enabled: true
+  #hosts: ["http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200"]
   #compression_level: 0
   #escape_html: false
   #protocol: "https"
@@ -126,15 +193,15 @@ output.elasticsearch:
   #ssl.curve_types: []
   #ssl.renegotiation: never
 
-setup.dashboards.enabled: true
+#setup.dashboards.enabled: true
 #setup.dashboards.directory: ${path.home}/kibana
 #setup.dashboards.url:
 #setup.dashboards.file:
 #setup.dashboards.beat: metricbeat
 #setup.dashboards.kibana_index: .kibana
 #setup.dashboards.index:
-setup.dashboards.always_kibana: true
-setup.dashboards.retry.enabled: true
+#setup.dashboards.always_kibana: true
+#setup.dashboards.retry.enabled: true
 #setup.dashboards.retry.interval: 1s
 #setup.dashboards.retry.maximum: 0
 
@@ -156,7 +223,7 @@ setup.kibana:
   #ssl.curve_types: []
 
 #================================ Logging ======================================
-logging.level: warn
+logging.level: warning
 #logging.selectors: [ ]
 #logging.to_stderr: false
 #logging.to_syslog: false
@@ -172,4 +239,4 @@ logging.files:
   permissions: 0644
   #interval: 0
 #logging.json: false
-xpack.monitoring.enabled: true
+#monitoring.enabled: true
