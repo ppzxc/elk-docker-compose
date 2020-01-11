@@ -1,0 +1,133 @@
+###################### Filebeat Configuration Example #########################
+#==========================  Modules configuration =============================
+filebeat.modules:
+#-------------------------------- System Module --------------------------------
+  - module: system
+    syslog:
+      enabled: true
+      #var.paths:
+        #input:
+      #auth:
+        #enabled: true
+        #var.paths:
+        #input:
+    
+#=========================== Filebeat inputs =============================
+    
+#filebeat.inputs:
+  #- type: log
+    #enabled: true
+      #paths:
+        #- /home/ex/exchange/logs/
+        #- /sv/php/var/log/php-fpm.log
+        #- /var/log/*.log
+      #exclude_lines: ['^DBG']
+      #include_lines: ['^ERR', '^WARN']
+      #exclude_files: ['.gz$']
+      #fields:
+      #  level: debug
+      #  review: 1
+      #multiline.pattern: ^\[
+      #multiline.negate: false
+      #multiline.match: after
+    
+#============================= Filebeat modules ===============================
+    
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+  #reload.period: 10s
+    
+#==================== Elasticsearch template setting ==========================
+setup.template.enabled: true
+setup.template.name: "filebeat-%{[agent.version]}"
+setup.template.pattern: "filebeat-%{[agent.version]}-*"
+#setup.template.fields: "${path.config}/fields.yml"
+#setup.template.append_fields:
+#- name: field_name
+#  type: field_type
+#setup.template.json.enabled: false
+#setup.template.json.path: "${path.config}/template.json"
+#setup.template.json.name: ""
+#setup.template.overwrite: false
+#
+setup.template.settings:
+  index.number_of_shards: 3
+  index.codec: best_compression
+  #_source.enabled: false
+    
+#================================ General =====================================
+name: LOG-MONITORING
+#tags: ["service-X", "web-tier"]
+#fields:
+#  env: staging
+    
+#============================== Dashboards =====================================
+#setup.dashboards.enabled: false
+#setup.dashboards.url:
+    
+#============================== Kibana =====================================
+#setup.kibana:
+  #host: "localhost:5601"
+  #space.id:
+    
+#================================ Outputs =====================================
+#output.elasticsearch:
+#  enabled: true
+#  hosts: ["172.18.0.2:9200"]
+#------------------------------- Redis output ----------------------------------
+output.redis:
+  enabled: true
+  codec.json:
+    pretty: false
+#    escape_html: false
+  hosts: ["172.18.0.12:6379"]
+  key: filebeat
+  password: Y&hZ&lgooHaW
+  db: 1
+  datatype: list
+  #worker: 1
+  #loadbalance: true
+  #timeout: 5s
+  #max_retries: 3
+  
+  #backoff.init: 1s
+  #backoff.max: 60s
+  #bulk_max_size: 2048
+  
+  #proxy_url:
+  #proxy_use_local_resolver: false
+  #ssl.enabled: true
+  #ssl.verification_mode: full
+  
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
+  #ssl.renegotiation: never
+      
+#================================ Processors =====================================
+    
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+    
+#================================ Logging =====================================
+    
+logging.level: info
+#logging.selectors: ["*"]
+#logging.to_files: true
+#logging.files:
+#path: /var/log/beats/filebeat
+#name: filebeat
+#keepfiles: 5
+#permissions: 0644
+  #interval: 0
+  #rotateonstartup: true
+  #logging.json: true

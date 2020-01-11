@@ -1,9 +1,9 @@
 version: '2.2'
 services:
-  redis-es:
+  es-redis:
     build: ./redis
     image: es-redis:5.0.7
-    container_name: redis-es
+    container_name: es-redis
     sysctls:
       - net.core.somaxconn=511
     ports:
@@ -15,21 +15,28 @@ services:
       elastic-network:
         ipv4_address: 172.18.0.12
 
-  grafana-es:
+  es-grafana:
     image: grafana/grafana:6.5.2
-    container_name: grafana-es
-    ports:
-      - "8430:3000"
+    container_name: es-grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=secret
     volumes:
       - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - es-mt01
+    #ports:
+    #- "8430:3000"
     networks:
       elastic-network:
         ipv4_address: 172.18.0.13
-    depends_on:
-      - es-mt01
-
+      web:
+    restart: always
+    #expose:
+    #  - "3000"
+    labels:
+      - "traefik.http.routers.my-app.rule=Host(`whoami.docker.localhost`)"
+      - "traefik.http.services.my-app.loadbalancer.server.port=3000"
+        
   es-mt01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
     container_name: es-mt01
@@ -56,8 +63,8 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /data/elasticsearch/master01/:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
+        #ports:
+            #- 9200:9200
     networks:
       elastic-network:
         ipv4_address: 172.18.0.2
@@ -323,26 +330,26 @@ services:
         ipv4_address: 172.18.0.9
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03', 'es-ing01']
    
-  es-lgs-idx:
+  es-idx:
     build: ./logstash
     image: logstash:7.5.1
-    container_name: es-lgs-idx
+    container_name: es-idx
     volumes:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
-      - ./logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      #- ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro
+      - ./logstash/pipeline/metricbeat.conf:/usr/share/logstash/pipeline/pipeline.conf:ro
       - /etc/localtime:/etc/localtime:ro
     environment:
       LS_JAVA_OPTS: "-Xmx1024m -Xms1024m"
-    networks:
     networks:
       elastic-network:
         ipv4_address: 172.18.0.10
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03', 'es-ing01', 'es-kib']
 
-  es-mtb-host:
-    build: ./metricbeat_host
-    image: metricbeat_host:7.5.1
-    container_name: es-mtb-host
+  es-mtb:
+    build: ./metricbeat
+    image: metricbeat:7.5.1
+    container_name: es-mtb
     command: -e
     user: root
     volumes:
@@ -356,9 +363,30 @@ services:
       - cap-add=sys_ptrace
       - cap-add=dac_read_search
     network_mode: host
-    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-lgs-idx', 'es-ing01', 'es-data03']
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-ing01', 'es-data03']
     healthcheck:
       test: metricbeat test config
+      interval: 30s
+      timeout: 15s
+      retries: 5
+
+  es-ftb:
+    build: ./filebeat
+    image: filebeat_host:7.5.1
+    container_name: es-ftb
+    command: -e
+    user: root
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /data/elasticsearch/filebeat01/:/usr/share/filebeat/data
+      - /var/log/:/var/log/:ro
+    network_mode: host
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-ing01', 'es-data03']
+    command: ["--strict.perms=false"]
+    healthcheck:
+      test: filebeat test config
       interval: 30s
       timeout: 15s
       retries: 5
@@ -369,7 +397,7 @@ services:
       #container_name: es-mtb-ctn
       #command: -e
       #user: root
-      #depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-lgs-idx', 'es-ing01', 'es-data03']
+      #depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-ing01', 'es-data03']
       #environment:
       #- http.enabled=true
       #- name=LOG-MONITOR-SERVER
@@ -385,6 +413,7 @@ services:
       #retries: 5
 
 networks:
+  web:
+    external: true
   elastic-network:
-    external: 
-      name: elastic-network
+    external: true
