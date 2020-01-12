@@ -2,14 +2,14 @@
 
 NETWORK_NAME=elastic-network
 
-if [ "$1" = "up" ] 
+if [ "$1" = "up" -o "$1" = "u" ] 
 then
         docker-compose build
 	docker-compose up -d
 	docker-compose logs -f
-elif [ "$1" = "network" ] 
+elif [ "$1" = "network" -o "$1" = "n" ] 
 then
-	if [ "$2" = "create" ]
+	if [ "$2" = "create" -o "$2" = "c" ]
 	then
 		docker network rm $NETWORK_NAME
         	docker network create \
@@ -21,10 +21,10 @@ then
 	  	  -o "com.docker.network.bridge.host_binding_ipv4"="0.0.0.0" \
 	  	  $NETWORK_NAME
 	fi
-elif [ "$1" = "down" ] 
+elif [ "$1" = "down" -o "$1" = "d" ] 
 then
 	docker-compose down -v
-elif [ "$1" = "reload" ] 
+elif [ "$1" = "reload" -o "$1" = "r" ] 
 then
 	docker-compose build
 	docker-compose up -d

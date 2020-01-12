@@ -24,18 +24,14 @@ services:
       - /etc/localtime:/etc/localtime:ro
     depends_on:
       - es-mt01
-    #ports:
-    #- "8430:3000"
     networks:
       elastic-network:
         ipv4_address: 172.18.0.13
-      web:
     restart: always
-    #expose:
-    #  - "3000"
     labels:
-      - "traefik.http.routers.my-app.rule=Host(`whoami.docker.localhost`)"
-      - "traefik.http.services.my-app.loadbalancer.server.port=3000"
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.nanoit.gq`)"
+      - "traefik.http.routers.grafana.entrypoints=http"
         
   es-mt01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
@@ -323,12 +319,16 @@ services:
     volumes:
       - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
       - /etc/localtime:/etc/localtime:ro
-    ports:
-      - 5601:5601
+        #ports:
+            #- 5601:5601
     networks:
       elastic-network:
         ipv4_address: 172.18.0.9
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03', 'es-ing01']
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kibana.rule=Host(`kibana.nanoit.gq`)"
+      - "traefik.http.routers.kibana.entrypoints=http"
    
   es-idx:
     build: ./logstash
@@ -337,7 +337,7 @@ services:
     volumes:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
       #- ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro
-      - ./logstash/pipeline/metricbeat.conf:/usr/share/logstash/pipeline/pipeline.conf:ro
+      - ./logstash/pipeline/pipeline.conf:/usr/share/logstash/pipeline/pipeline.conf:ro
       - /etc/localtime:/etc/localtime:ro
     environment:
       LS_JAVA_OPTS: "-Xmx1024m -Xms1024m"
@@ -413,7 +413,5 @@ services:
       #retries: 5
 
 networks:
-  web:
-    external: true
   elastic-network:
     external: true

@@ -5,11 +5,11 @@ filebeat.modules:
   - module: system
     syslog:
       enabled: true
-      #var.paths:
+      var.paths: [ "/var/log/messages*" ]
         #input:
-      #auth:
-        #enabled: true
-        #var.paths:
+    auth:
+      enabled: true
+      var.paths: [ "/var/log/secure*" ]
         #input:
     
 #=========================== Filebeat inputs =============================
@@ -78,8 +78,8 @@ name: LOG-MONITORING
 #------------------------------- Redis output ----------------------------------
 output.redis:
   enabled: true
-  codec.json:
-    pretty: false
+  #codec.json:
+          #    pretty: false
 #    escape_html: false
   hosts: ["172.18.0.12:6379"]
   key: filebeat
@@ -120,7 +120,7 @@ processors:
     
 #================================ Logging =====================================
     
-logging.level: info
+logging.level: debug
 #logging.selectors: ["*"]
 #logging.to_files: true
 #logging.files:
