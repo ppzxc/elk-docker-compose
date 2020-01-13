@@ -29,13 +29,43 @@ metricbeat.max_start_delay: 10s
               #period: 10s
               #hosts: ["${host}:2379"]
 
-#processors:
-#  - add_host_metadata: ~
-#  - add_cloud_metadata: ~
-#  - add_docker_metadata: ~
-#  - add_kubernetes_metadata: ~
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
 
 #==========================  Modules configuration =============================
+#-------------------------------- System Module --------------------------------
+metricbeat.modules:
+- module: system
+  metricsets:
+    - cpu             # CPU usage
+    - load            # CPU load averages
+    - memory          # Memory usage
+    - network         # Network IO
+    - process         # Per process metrics
+    - process_summary # Process summary
+    - uptime          # System Uptime
+    - socket_summary  # Socket summary
+    - core           # Per CPU core usage
+    - diskio         # Disk IO
+    - filesystem     # File system usage for each mountpoint
+    - fsstat         # File system summary metrics
+    #- raid           # Raid
+    - socket         # Sockets and connection info (linux only)
+  enabled: true
+  period: 10s
+  processes: ['.*']
+
+  cpu.metrics:  ["percentages"]  # The other available options are normalized_percentages and ticks.
+  core.metrics: ["percentages"]  # The other available option is ticks.
+
+  process.include_top_n:
+    enabled: true
+    by_cpu: 20
+    by_memory: 20
+
 #---------------------------- Elasticsearch Module ----------------------------
 metricbeat.modules:
 - module: elasticsearch
@@ -49,19 +79,27 @@ metricbeat.modules:
     #- ml_job
   period: 10s
   hosts: ["http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200"]
+  #xpack.enabled: true
 # username: "elastic"
 # password: "changeme"
 # ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
 # index_recovery.active_only: true
-#xpack.enabled: false
 
 #--------------------------------- Beat Module ---------------------------------
-#- module: beat
-#  metricsets:
-#    - stats
-#    - state
-#  period: 10s
-#  hosts: ["http://127.0.0.1:5066"]
+- module: beat
+  metricsets:
+    - stats
+    - state
+  period: 10s
+  hosts: ["http://127.0.0.1:5066"]
+
+- module: beat
+  metricsets:
+    - stats
+    - state
+  period: 10s
+  hosts: ["http://127.0.0.1:5067"]
+
 #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
 #xpack.enabled: false
 
@@ -72,7 +110,7 @@ metricbeat.modules:
   hosts: ["172.18.0.9:5601"]
   basepath: ""
   enabled: true
-  #xpack.enabled: false
+  #xpack.enabled: true
 
 #------------------------------- Logstash Module -------------------------------
 - module: logstash
@@ -80,6 +118,7 @@ metricbeat.modules:
   enabled: true
   period: 10s
   hosts: ["172.18.0.10:9600"]
+
 #-------------------------------- Redis Module --------------------------------
 - module: redis
   metricsets: ["info", "keyspace"]
@@ -87,90 +126,49 @@ metricbeat.modules:
   period: 10s
   hosts: ["172.18.0.12:6379"]
   timeout: 1s
-#fields:
-#datacenter: west
-#network: tcp
-#maxconn: 10
-#  processors:
-#    - include_fields:
-#    - fields: ["beat", "metricset", "redis.info.stats"]
+  #fields:
+  #datacenter: west
+  #network: tcp
+  #maxconn: 10
+  #  processors:
+  #    - include_fields:
+  #    - fields: ["beat", "metricset", "redis.info.stats"]
   password: Y&hZ&lgooHaW
-#
+
+#-------------------------------- Docker Module --------------------------------
+- module: docker
+  metricsets:
+    - "container"
+    - "cpu"
+    - "diskio"
+    - "event"
+    - "healthcheck"
+    - "info"
+    #- "image"
+    - "memory"
+    - "network"
+  hosts: ["unix:///var/run/docker.sock"]
+  period: 10s
+  enabled: true
+  #labels.dedot: false
+  #cpu.cores: true
+  #ssl:
+    #certificate_authority: "/etc/pki/root/ca.pem"
+    #certificate:           "/etc/pki/client/cert.pem"
+    #key:                   "/etc/pki/client/cert.key"
+
 #================================ Outputs ======================================
-##-------------------------- Elasticsearch output ------------------------------
+#-------------------------- REDIS output ------------------------------
 output.redis:
   hosts: ["172.18.0.12:6379"]
   password: Y&hZ&lgooHaW
   key: "metricbeat"
   db: 0
   timeout: 5
-#-------------------------- Elasticsearch output -------------------------------
-#output.elasticsearch:
-  #enabled: true
-  #hosts: ["http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200"]
-  #compression_level: 0
-  #escape_html: false
-  #protocol: "https"
-  #api_key: "id:api_key"
-  #username: "elastic"
-  #password: "changeme"
-  #parameters:
-    #param1: value1
-    #param2: value2
-  #worker: 1
-  #index: "metricbeat-container-%{[agent.version]}-%{+yyyy.MM.dd}"
-  #pipeline: ""
-  #path: "/elasticsearch"
-  #headers:
-  #proxy_url: http://proxy:3128
-  #proxy_disable: false
-  #max_retries: 3
-  #bulk_max_size: 50
-  #backoff.init: 1s
-  #backoff.max: 60s
-  #timeout: 90
-  #ssl.enabled: true
-  #ssl.verification_mode: full
-  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
-  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
-  #ssl.certificate: "/etc/pki/client/cert.pem"
-  #ssl.key: "/etc/pki/client/cert.key"
-  #ssl.key_passphrase: ''
-  #ssl.cipher_suites: []
-  #ssl.curve_types: []
-  #ssl.renegotiation: never
 
-#setup.dashboards.enabled: true
-#setup.dashboards.directory: ${path.home}/kibana
-#setup.dashboards.url:
-#setup.dashboards.file:
-#setup.dashboards.beat: metricbeat
-#setup.dashboards.kibana_index: .kibana
-#setup.dashboards.index: "metricbeat-container-*"
-#setup.dashboards.always_kibana: true
-#setup.dashboards.retry.enabled: true
-#setup.dashboards.retry.interval: 1s
-#setup.dashboards.retry.maximum: 0
-
-#============================== Kibana =====================================
-#setup.kibana:
-#host: "172.18.0.9:5601"
-  #protocol: "https"
-  #username: "elastic"
-  #password: "changeme"
-  #path: ""
-  #ssl.enabled: true
-  #ssl.verification_mode: full
-  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
-  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
-  #ssl.certificate: "/etc/pki/client/cert.pem"
-  #ssl.key: "/etc/pki/client/cert.key"
-  #ssl.key_passphrase: ''
-  #ssl.cipher_suites: []
-  #ssl.curve_types: []
-
+name: LOG-MONITORING
 #================================ Logging ======================================
-logging.level: warning
+logging.level: info
 #logging.selectors: [ ]
 #logging.to_stderr: false
 #logging.to_syslog: false
@@ -179,11 +177,18 @@ logging.level: warning
 #logging.metrics.period: 30s
 logging.to_files: true
 logging.files:
-  path: /var/log/metricbeat
+  path: /usr/share/metricbeat/logs
   name: metricbeat
   #rotateeverybytes: 10485760 # = 10MB
-  keepfiles: 2
+  keepfiles: 5
   permissions: 0644
   #interval: 0
-#logging.json: false
+logging.json: true
 #monitoring.enabled: true
+
+#================================ HTTP Endpoint ======================================
+http.enabled: true
+http.host: localhost
+http.port: 5066
+#http.named_pipe.user:
+#http.named_pipe.security_descriptor:

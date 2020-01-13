@@ -6,14 +6,31 @@ services:
     container_name: es-redis
     sysctls:
       - net.core.somaxconn=511
-    ports:
-      - 8579:6379
+        #ports:
+            #- "16379:6379"
+      #- 8579:6379
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /data/redis/:/data
+      - /data/logs/redis:/var/log/redis
     networks:
       elastic-network:
         ipv4_address: 172.18.0.12
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.http.routers.es-redis.rule=Host(`*`)"
+      #- "traefik.http.routers.es-redis.entrypoints=redis"
+      #- "traefik.enable=true"
+      - "traefik.tcp.routers.redis.rule=HostSNI(`*`)"
+        #- "traefik.tcp.routers.redis-router.tls=true"
+      - "traefik.tcp.routers.redis.service=redis@docker"
+      - "traefik.tcp.routers.redis.entrypoints=frontend-redis"
+      - "traefik.tcp.services.redis.loadbalancer.server.port=6379"
+        #- "traefik.tcp.services.redis-service.loadbalancer.terminationdelay=42"
+        #- "traefik.docker.network=elastic-network"
+      #- "traefik.tcp.routers.es-redis.service=es-redis@docker"
+      #- "traefik.tcp.routers.es-redis.entrypoints=redis"
+      #- "traefik.tcp.routers.es-redis.tls.passthrough=true"
 
   es-grafana:
     image: grafana/grafana:6.5.2
@@ -336,8 +353,9 @@ services:
     container_name: es-idx
     volumes:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
-      #- ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro
-      - ./logstash/pipeline/pipeline.conf:/usr/share/logstash/pipeline/pipeline.conf:ro
+      - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+        #- ./logstash/pipeline/pipeline.conf:/usr/share/logstash/pipeline/pipeline.conf:ro
       - /etc/localtime:/etc/localtime:ro
     environment:
       LS_JAVA_OPTS: "-Xmx1024m -Xms1024m"
@@ -358,6 +376,8 @@ services:
       - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
       - /:/hostfs:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /data/logs/metricbeat/:/usr/share/metricbeat/logs
+      - /data/elasticsearch/metricbeat01/:/usr/share/metricbeat/data
     environment:
       - name=LOG-MONITOR-SERVER
       - cap-add=sys_ptrace
@@ -381,7 +401,7 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /data/elasticsearch/filebeat01/:/usr/share/filebeat/data
-      - /var/log/:/var/log/:ro
+      - /data/logs/filebeat/:/usr/share/filebeat/logs/
     network_mode: host
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-ing01', 'es-data03']
     command: ["--strict.perms=false"]
@@ -390,27 +410,6 @@ services:
       interval: 30s
       timeout: 15s
       retries: 5
-    
-      #es-mtb-ctn:
-      #build: ./metricbeat_container
-      #image: metricbeat_container:7.5.1
-      #container_name: es-mtb-ctn
-      #command: -e
-      #user: root
-      #depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-ing01', 'es-data03']
-      #environment:
-      #- http.enabled=true
-      #- name=LOG-MONITOR-SERVER
-      #volumes:
-      #- /etc/localtime:/etc/localtime:ro
-      #networks:
-      #elastic-network:
-      #ipv4_address: 172.18.0.11
-      #healthcheck:
-      #test: metricbeat test config
-      #interval: 30s
-      #timeout: 15s
-      #retries: 5
 
 networks:
   elastic-network:

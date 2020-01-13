@@ -2,34 +2,52 @@
 #==========================  Modules configuration =============================
 filebeat.modules:
 #-------------------------------- System Module --------------------------------
-  - module: system
-    syslog:
-      enabled: true
-      var.paths: [ "/var/log/messages*" ]
-        #input:
-    auth:
-      enabled: true
-      var.paths: [ "/var/log/secure*" ]
-        #input:
+- module: system
+  syslog:
+    enabled: true
+    var.paths: [ "/var/log/messages*" ]
+  auth:
+    enabled: true
+    var.paths: [ "/var/log/secure*" ]
+
+#------------------------------- Traefik Module -------------------------------
+- module: traefik
+  access:
+    enabled: true
+    var.paths: [ "/home/operation/app/traefik/logs/access.log" ]
+    #input:
+
+#-------------------------------- Redis Module --------------------------------
+- module: redis
+  log:
+    enabled: true
+    var.paths: ["/data/redis/redis.log*"]
+  slowlog:
+    enabled: true
+    var.hosts: ["172.18.0.12:6379"]
+    var.password: Y&hZ&lgooHaW
     
 #=========================== Filebeat inputs =============================
     
-#filebeat.inputs:
-  #- type: log
-    #enabled: true
-      #paths:
-        #- /home/ex/exchange/logs/
-        #- /sv/php/var/log/php-fpm.log
-        #- /var/log/*.log
-      #exclude_lines: ['^DBG']
-      #include_lines: ['^ERR', '^WARN']
-      #exclude_files: ['.gz$']
-      #fields:
-      #  level: debug
-      #  review: 1
-      #multiline.pattern: ^\[
-      #multiline.negate: false
-      #multiline.match: after
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/cron*
+    #- /var/log/*
+    #- /var/log/*/*
+    #- /home/ex/exchange/logs/*
+    #- /sv/php/var/log/php-fpm.log
+  exclude_files: [ '.gz$', 'messages*', 'secure*' ]
+  #encoding: plain # or utf-8 or euc-kr
+  #exclude_lines: ['^DBG']
+  #include_lines: ['^ERR', '^WARN']
+  #fields:
+    #level: debug
+    #review: 1
+  #multiline.pattern: ^\[
+  #multiline.negate: false
+  #multiline.match: after
     
 #============================= Filebeat modules ===============================
     
@@ -119,15 +137,24 @@ processors:
   - add_kubernetes_metadata: ~
     
 #================================ Logging =====================================
-    
-logging.level: debug
+http.enabled: true
+http.port: 5067
+
+logging.level: info
 #logging.selectors: ["*"]
-#logging.to_files: true
-#logging.files:
-#path: /var/log/beats/filebeat
-#name: filebeat
-#keepfiles: 5
-#permissions: 0644
+logging.to_files: true
+logging.files:
+  path: /usr/share/filebeat/logs
+  name: filebeat
+  keepfiles: 5
+  permissions: 0644
   #interval: 0
   #rotateonstartup: true
   #logging.json: true
+
+#================================ HTTP Endpoint ======================================
+http.enabled: true
+http.host: localhost
+http.port: 5067
+#http.named_pipe.user:
+#http.named_pipe.security_descriptor:

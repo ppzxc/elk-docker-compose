@@ -3,10 +3,10 @@
 #  pipeline.batch.size: 1
 #  config.string: "input { generator {} } filter { sleep { time => 1 } } output { stdout { codec => dots } }"
 
-- pipeline.id: filebeat.conf
+- pipeline.id: filebeat
   #queue.type: persisted
   path.config: "/usr/share/logstash/pipeline/filebeat.conf"
-- pipeline.id: metricbeat.conf
+- pipeline.id: metricbeat
   #queue.type: persisted
   path.config: "/usr/share/logstash/pipeline/metricbeat.conf"
 
