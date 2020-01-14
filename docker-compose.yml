@@ -18,19 +18,10 @@ services:
         ipv4_address: 172.18.0.12
     labels:
       - "traefik.enable=true"
-      #- "traefik.http.routers.es-redis.rule=Host(`*`)"
-      #- "traefik.http.routers.es-redis.entrypoints=redis"
-      #- "traefik.enable=true"
       - "traefik.tcp.routers.redis.rule=HostSNI(`*`)"
-        #- "traefik.tcp.routers.redis-router.tls=true"
-      - "traefik.tcp.routers.redis.service=redis@docker"
       - "traefik.tcp.routers.redis.entrypoints=frontend-redis"
+      - "traefik.tcp.routers.redis.service=redis@docker"
       - "traefik.tcp.services.redis.loadbalancer.server.port=6379"
-        #- "traefik.tcp.services.redis-service.loadbalancer.terminationdelay=42"
-        #- "traefik.docker.network=elastic-network"
-      #- "traefik.tcp.routers.es-redis.service=es-redis@docker"
-      #- "traefik.tcp.routers.es-redis.entrypoints=redis"
-      #- "traefik.tcp.routers.es-redis.tls.passthrough=true"
 
   es-grafana:
     image: grafana/grafana:6.5.2
@@ -47,8 +38,15 @@ services:
     restart: always
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.nanoit.gq`)"
-      - "traefik.http.routers.grafana.entrypoints=http"
+      - "traefik.http.routers.es-grafana.rule=Host(`grafana.nanoit.gq`)"
+      - "traefik.http.routers.es-grafana.entrypoints=http"
+      - "traefik.http.routers.es-grafana.middlewares=redirect-to-https@docker"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+      - "traefik.http.routers.inner-grafana-secured.rule=Host(`grafana.nanoit.gq`)"
+      - "traefik.http.routers.inner-grafana-secured.entrypoints=https"
+      - "traefik.http.routers.inner-grafana-secured.tls=true"
+      - "traefik.http.routers.inner-grafana-secured.tls.certresolver=lmc"
         
   es-mt01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
@@ -346,6 +344,14 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.kibana.rule=Host(`kibana.nanoit.gq`)"
       - "traefik.http.routers.kibana.entrypoints=http"
+      - "traefik.http.routers.kibana.middlewares=redirect-to-https@docker"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+      - "traefik.http.routers.inner-kibana-secured.rule=Host(`kibana.nanoit.gq`)"
+      - "traefik.http.routers.inner-kibana-secured.entrypoints=https"
+      - "traefik.http.routers.inner-kibana-secured.tls=true"
+      - "traefik.http.routers.inner-kibana-secured.tls.certresolver=lmc"
+
    
   es-idx:
     build: ./logstash
