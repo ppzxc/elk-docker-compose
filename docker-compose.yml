@@ -23,33 +23,34 @@ services:
       - "traefik.tcp.routers.redis.service=redis@docker"
       - "traefik.tcp.services.redis.loadbalancer.server.port=6379"
 
-  es-grafana:
-    image: grafana/grafana:6.5.2
-    container_name: es-grafana
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=secret
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-    depends_on:
-      - es-mt01
-    networks:
-      elastic-network:
-        ipv4_address: 172.18.0.13
-    restart: always
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.es-grafana.rule=Host(`grafana.nanoit.gq`)"
-      - "traefik.http.routers.es-grafana.entrypoints=http"
-      - "traefik.http.routers.es-grafana.middlewares=redirect-to-https@docker"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-
-      - "traefik.http.routers.inner-grafana-secured.rule=Host(`grafana.nanoit.gq`)"
-      - "traefik.http.routers.inner-grafana-secured.entrypoints=https"
-      - "traefik.http.routers.inner-grafana-secured.tls=true"
-      - "traefik.http.routers.inner-grafana-secured.tls.certresolver=lmc"
+        #es-grafana:
+        #image: grafana/grafana:6.5.2
+        #container_name: es-grafana
+        #environment:
+        #- GF_SECURITY_ADMIN_PASSWORD=secret
+        #volumes:
+        #- /etc/localtime:/etc/localtime:ro
+        #depends_on:
+        #- es-mt01
+        #networks:
+        #elastic-network:
+        #ipv4_address: 172.18.0.13
+        #restart: always
+        #labels:
+        #- "traefik.enable=true"
+        #- "traefik.http.routers.es-grafana.rule=Host(`grafana.nanoit.gq`)"
+        #- "traefik.http.routers.es-grafana.entrypoints=http"
+        #- "traefik.http.routers.es-grafana.middlewares=redirect-to-https@docker"
+        #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+        #- "traefik.http.routers.inner-grafana-secured.rule=Host(`grafana.nanoit.gq`)"
+        #- "traefik.http.routers.inner-grafana-secured.entrypoints=https"
+        #- "traefik.http.routers.inner-grafana-secured.tls=true"
+        #- "traefik.http.routers.inner-grafana-secured.tls.certresolver=lmc"
         
   es-mt01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    build: ./elasticsearch
+    #image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    image: elasticsearch:7.5.1
     container_name: es-mt01
     environment:
       - network.host=_site_
@@ -66,7 +67,7 @@ services:
 #      - xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
     ulimits:
       memlock:
         soft: -1
@@ -74,8 +75,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /data/elasticsearch/master01/:/usr/share/elasticsearch/data
-        #ports:
-            #- 9200:9200
+      - /data/logs/elasticsearch/master01:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.2
@@ -86,7 +86,9 @@ services:
       retries: 5
 
   es-mt02:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    build: ./elasticsearch
+    #image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    image: elasticsearch:7.5.1
     container_name: es-mt02
     environment:
       - network.host=_site_
@@ -103,7 +105,7 @@ services:
  #     - xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
     ulimits:
       memlock:
         soft: -1
@@ -111,12 +113,15 @@ services:
     volumes:
       - /data/elasticsearch/master02/:/usr/share/elasticsearch/data
       - /etc/localtime:/etc/localtime:ro
+      - /data/logs/elasticsearch/master02:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.3
 
   es-mt03:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    build: ./elasticsearch
+    #image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    image: elasticsearch:7.5.1
     container_name: es-mt03
     environment:
       - network.host=_site_
@@ -133,7 +138,7 @@ services:
  #     - xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
     ulimits:
       memlock:
         soft: -1
@@ -141,12 +146,15 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /data/elasticsearch/master03/:/usr/share/elasticsearch/data
+      - /data/logs/elasticsearch/master03:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.4
 
   es-cdn01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    build: ./elasticsearch
+    #image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    image: elasticsearch:7.5.1
     container_name: es-cdn01
     environment:
       - network.host=_site_
@@ -163,7 +171,7 @@ services:
  #     - xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
     ulimits:
       memlock:
         soft: -1
@@ -171,12 +179,15 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /data/elasticsearch/coordinate01/:/usr/share/elasticsearch/data
+      - /data/logs/elasticsearch/coordinate01:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.5
 
   es-cdn02:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    build: ./elasticsearch
+    #image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    image: elasticsearch:7.5.1
     container_name: es-cdn02
     environment:
       - network.host=_site_
@@ -193,7 +204,7 @@ services:
  #     - xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
     ulimits:
       memlock:
         soft: -1
@@ -201,12 +212,15 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /data/elasticsearch/coordinate02/:/usr/share/elasticsearch/data
+      - /data/logs/elasticsearch/coordinate02:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.6
 
   es-data01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    build: ./elasticsearch
+    #image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    image: elasticsearch:7.5.1
     container_name: es-data01
     environment:
       - network.host=_site_
@@ -231,12 +245,15 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /data/elasticsearch/data01/:/usr/share/elasticsearch/data
+      - /data/logs/elasticsearch/data01:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.7
 
   es-data02:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    build: ./elasticsearch
+    #image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    image: elasticsearch:7.5.1
     container_name: es-data02
     environment:
       - network.host=_site_
@@ -261,12 +278,15 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /data/elasticsearch/data02/:/usr/share/elasticsearch/data
+      - /data/logs/elasticsearch/data02:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.8
 
   es-data03:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    build: ./elasticsearch
+    #image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    image: elasticsearch:7.5.1
     container_name: es-data03
     environment:
       - network.host=_site_
@@ -291,39 +311,43 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /data/elasticsearch/data03/:/usr/share/elasticsearch/data
+      - /data/logs/elasticsearch/data03:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.15
 
-  es-ing01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
-    container_name: es-ing01
-    environment:
-      - network.host=_site_
-      - node.name=es-ing01
-      - node.master=false
-      - node.data=false
-      - node.ingest=true
-      - cluster.remote.connect=false
-      - cluster.name=nanoit-log-cluster
-      - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
-      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
-      - bootstrap.memory_lock=true
- #     - xpack.security.transport.ssl.enabled=true
- #     - xpack.security.enabled=true
-      - xpack.monitoring.enabled=true
-      - xpack.monitoring.collection.enabled=true
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /data/elasticsearch/ingest01/:/usr/share/elasticsearch/data
-    networks:
-      elastic-network:
-        ipv4_address: 172.18.0.14
+    #es-ing01:
+    #build: ./elasticsearch
+    #image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    #image: elasticsearch:7.5.1
+    #container_name: es-ing01
+    #environment:
+    #- network.host=_site_
+    #- node.name=es-ing01
+    #- node.master=false
+    #- node.data=false
+    #- node.ingest=true
+    #- cluster.remote.connect=false
+    #- cluster.name=nanoit-log-cluster
+    #- discovery.seed_hosts=es-mt01,es-mt02,es-mt03
+    #- cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
+    #- bootstrap.memory_lock=true
+    #- xpack.security.transport.ssl.enabled=true
+    #- xpack.security.enabled=true
+    #- xpack.monitoring.enabled=true
+    #- xpack.monitoring.collection.enabled=true
+    #- "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    #ulimits:
+    #memlock:
+    #soft: -1
+    #hard: -1
+    #volumes:
+    #- /etc/localtime:/etc/localtime:ro
+    #- /data/elasticsearch/ingest01/:/usr/share/elasticsearch/data
+    #- /data/logs/elasticsearch/ingest01:/usr/share/elasticsearch/logs
+    #networks:
+    #elastic-network:
+    #ipv4_address: 172.18.0.14
 
   es-kib:
     image: docker.elastic.co/kibana/kibana:7.5.1
@@ -339,7 +363,7 @@ services:
     networks:
       elastic-network:
         ipv4_address: 172.18.0.9
-    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03', 'es-ing01']
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03']
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.kibana.rule=Host(`kibana.nanoit.gq`)"
@@ -368,7 +392,7 @@ services:
     networks:
       elastic-network:
         ipv4_address: 172.18.0.10
-    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03', 'es-ing01', 'es-kib']
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03', 'es-kib']
 
   es-mtb:
     build: ./metricbeat
@@ -382,14 +406,14 @@ services:
       - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
       - /:/hostfs:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /data/logs/metricbeat/:/usr/share/metricbeat/logs
+      - /data/logs/elasticsearch/metricbeat01:/usr/share/metricbeat/logs
       - /data/elasticsearch/metricbeat01/:/usr/share/metricbeat/data
     environment:
       - name=LOG-MONITOR-SERVER
       - cap-add=sys_ptrace
       - cap-add=dac_read_search
     network_mode: host
-    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-ing01', 'es-data03']
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
     healthcheck:
       test: metricbeat test config
       interval: 30s
@@ -407,9 +431,13 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /data/elasticsearch/filebeat01/:/usr/share/filebeat/data
-      - /data/logs/filebeat/:/usr/share/filebeat/logs/
+      - /data/logs/elasticsearch:/usr/share/filebeat/logs/elasticsearch
+      - /data/logs/elasticsearch/filebeat01:/usr/share/filebeat/logs/filebeat01
+      - /data/logs/traefik:/usr/share/filebeat/logs/traefik
+      - /data/redis/redis.log:/usr/share/filebeat/logs/redis/redis.log
+      - /var/log:/usr/share/filebeat/logs/system
     network_mode: host
-    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-ing01', 'es-data03']
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
     command: ["--strict.perms=false"]
     healthcheck:
       test: filebeat test config

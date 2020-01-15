@@ -28,7 +28,7 @@ elif [ "$1" = "reload" -o "$1" = "r" ]
 then
 	docker-compose build
 	docker-compose up -d
-	docker-compose logs -f
+	#docker-compose logs -f
 else
 	echo "null or empty"
 fi

@@ -4,8 +4,6 @@ http.host: "0.0.0.0"
 xpack.monitoring.elasticsearch.hosts: [ "http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200" ]
 
 #pipeline.id: filebeat
-#
 #ath.config: "/home/operation/app/elk-docker-compose/pipeline/filebeat.conf"
-
 #pipeline.id: metricbeat
 #path.config: "/home/operation/app/elk-docker-compose/pipeline/metricbeat.conf"

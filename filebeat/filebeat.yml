@@ -5,27 +5,103 @@ filebeat.modules:
 - module: system
   syslog:
     enabled: true
-    var.paths: [ "/var/log/messages*" ]
+    var.paths: [ "/usr/share/filebeat/logs/system/messages*" ]
   auth:
     enabled: true
-    var.paths: [ "/var/log/secure*" ]
+    var.paths: [ "/usr/share/filebeat/logs/system/secure*" ]
 
 #------------------------------- Traefik Module -------------------------------
 - module: traefik
   access:
     enabled: true
-    var.paths: [ "/home/operation/app/traefik/logs/access.log" ]
+    var.paths: [ "/usr/share/filebeat/logs/traefik/access.log" ]
     #input:
 
 #-------------------------------- Redis Module --------------------------------
 - module: redis
   log:
     enabled: true
-    var.paths: ["/data/redis/redis.log*"]
+    var.paths: ["/usr/share/filebeat/logs/redis/redis.log*"]
   slowlog:
     enabled: true
     var.hosts: ["172.18.0.12:6379"]
     var.password: Y&hZ&lgooHaW
+
+#---------------------------- Elasticsearch Module ----------------------------
+- module: elasticsearch
+  server:
+    enabled: true
+    var.paths: 
+      - /usr/share/filebeat/logs/elasticsearch/master01/*_server.json
+      - /usr/share/filebeat/logs/elasticsearch/master02/*_server.json
+      - /usr/share/filebeat/logs/elasticsearch/master03/*_server.json
+      - /usr/share/filebeat/logs/elasticsearch/coordinate01/*_server.json
+      - /usr/share/filebeat/logs/elasticsearch/coordinate02/*_server.json
+      - /usr/share/filebeat/logs/elasticsearch/ingest01/*_server.json
+      - /usr/share/filebeat/logs/elasticsearch/data01/*_server.json
+      - /usr/share/filebeat/logs/elasticsearch/data02/*_server.json
+      - /usr/share/filebeat/logs/elasticsearch/data03/*_server.json
+
+  gc:
+    enabled: true
+    var.paths: 
+      - /usr/share/filebeat/logs/elasticsearch/master01/gc.log.[0-9]*
+      - /usr/share/filebeat/logs/elasticsearch/master02/gc.log.[0-9]*
+      - /usr/share/filebeat/logs/elasticsearch/master03/gc.log.[0-9]*
+      - /usr/share/filebeat/logs/elasticsearch/coordinate01/gc.log.[0-9]*
+      - /usr/share/filebeat/logs/elasticsearch/coordinate02/gc.log.[0-9]*
+      - /usr/share/filebeat/logs/elasticsearch/ingest01/gc.log.[0-9]*
+      - /usr/share/filebeat/logs/elasticsearch/data01/gc.log.[0-9]*
+      - /usr/share/filebeat/logs/elasticsearch/data02/gc.log.[0-9]*
+      - /usr/share/filebeat/logs/elasticsearch/data03/gc.log.[0-9]*
+      - /usr/share/filebeat/logs/elasticsearch/master01/gc.log
+      - /usr/share/filebeat/logs/elasticsearch/master02/gc.log
+      - /usr/share/filebeat/logs/elasticsearch/master03/gc.log
+      - /usr/share/filebeat/logs/elasticsearch/coordinate01/gc.log
+      - /usr/share/filebeat/logs/elasticsearch/coordinate02/gc.log
+      - /usr/share/filebeat/logs/elasticsearch/ingest01/gc.log
+      - /usr/share/filebeat/logs/elasticsearch/data01/gc.log
+      - /usr/share/filebeat/logs/elasticsearch/data02/gc.log
+      - /usr/share/filebeat/logs/elasticsearch/data03/gc.log
+
+  audit:
+    enabled: true
+    var.paths:
+      - /usr/share/filebeat/logs/elasticsearch/master01/*_audit.json
+      - /usr/share/filebeat/logs/elasticsearch/master02/*_audit.json
+      - /usr/share/filebeat/logs/elasticsearch/master03/*_audit.json
+      - /usr/share/filebeat/logs/elasticsearch/coordinate01/*_audit.json
+      - /usr/share/filebeat/logs/elasticsearch/coordinate02/*_audit.json
+      - /usr/share/filebeat/logs/elasticsearch/ingest01/*_audit.json
+      - /usr/share/filebeat/logs/elasticsearch/data01/*_audit.json
+      - /usr/share/filebeat/logs/elasticsearch/data02/*_audit.json
+      - /usr/share/filebeat/logs/elasticsearch/data03/*_audit.json
+  
+  slowlog:
+    enabled: true
+    var.paths: 
+      - /usr/share/filebeat/logs/elasticsearch/master01/*_slowlog.json
+      - /usr/share/filebeat/logs/elasticsearch/master02/*_slowlog.json
+      - /usr/share/filebeat/logs/elasticsearch/master03/*_slowlog.json
+      - /usr/share/filebeat/logs/elasticsearch/coordinate01/*_slowlog.json
+      - /usr/share/filebeat/logs/elasticsearch/coordinate02/*_slowlog.json
+      - /usr/share/filebeat/logs/elasticsearch/ingest01/*_slowlog.json
+      - /usr/share/filebeat/logs/elasticsearch/data01/*_slowlog.json
+      - /usr/share/filebeat/logs/elasticsearch/data02/*_slowlog.json
+      - /usr/share/filebeat/logs/elasticsearch/data03/*_slowlog.json
+  
+  deprecation:
+    enabled: true
+    var.paths: 
+      - /usr/share/filebeat/logs/elasticsearch/master01/*_deprecation.json
+      - /usr/share/filebeat/logs/elasticsearch/master02/*_deprecation.json
+      - /usr/share/filebeat/logs/elasticsearch/master03/*_deprecation.json
+      - /usr/share/filebeat/logs/elasticsearch/coordinate01/*_deprecation.json
+      - /usr/share/filebeat/logs/elasticsearch/coordinate02/*_deprecation.json
+      - /usr/share/filebeat/logs/elasticsearch/ingest01/*_deprecation.json
+      - /usr/share/filebeat/logs/elasticsearch/data01/*_deprecation.json
+      - /usr/share/filebeat/logs/elasticsearch/data02/*_deprecation.json
+      - /usr/share/filebeat/logs/elasticsearch/data03/*_deprecation.json
     
 #=========================== Filebeat inputs =============================
     
@@ -33,7 +109,7 @@ filebeat.inputs:
 - type: log
   enabled: true
   paths:
-    - /var/log/cron*
+    - /usr/share/filebeat/logs/system/cron*
     #- /var/log/*
     #- /var/log/*/*
     #- /home/ex/exchange/logs/*
@@ -57,9 +133,9 @@ filebeat.config.modules:
   #reload.period: 10s
     
 #==================== Elasticsearch template setting ==========================
-setup.template.enabled: true
-setup.template.name: "filebeat-%{[agent.version]}"
-setup.template.pattern: "filebeat-%{[agent.version]}-*"
+#setup.template.enabled: true
+#setup.template.name: "host-%{[agent.version]}"
+#setup.template.pattern: "host-%{[agent.version]}-*"
 #setup.template.fields: "${path.config}/fields.yml"
 #setup.template.append_fields:
 #- name: field_name
@@ -68,15 +144,15 @@ setup.template.pattern: "filebeat-%{[agent.version]}-*"
 #setup.template.json.path: "${path.config}/template.json"
 #setup.template.json.name: ""
 #setup.template.overwrite: false
-#
+
 setup.template.settings:
   index.number_of_shards: 3
   index.codec: best_compression
   #_source.enabled: false
     
 #================================ General =====================================
-name: LOG-MONITORING
-#tags: ["service-X", "web-tier"]
+name: LOG-MONITORING-SERVER
+tags: ["traefik", "elasticsearch", "auth", "redis", "cron", "messages"]
 #fields:
 #  env: staging
     
@@ -86,18 +162,19 @@ name: LOG-MONITORING
     
 #============================== Kibana =====================================
 #setup.kibana:
-  #host: "localhost:5601"
+#  host: "172.18.0.9:5601"
   #space.id:
     
 #================================ Outputs =====================================
 #output.elasticsearch:
 #  enabled: true
 #  hosts: ["172.18.0.2:9200"]
+#  index: "host-%{[agent.version]}-%{+yyyy.MM.dd}"
 #------------------------------- Redis output ----------------------------------
 output.redis:
   enabled: true
-  #codec.json:
-          #    pretty: false
+#  codec.json:
+#    pretty: true
 #    escape_html: false
   hosts: ["172.18.0.12:6379"]
   key: filebeat
@@ -140,11 +217,11 @@ processors:
 http.enabled: true
 http.port: 5067
 
-logging.level: info
+logging.level: warning
 #logging.selectors: ["*"]
 logging.to_files: true
 logging.files:
-  path: /usr/share/filebeat/logs
+  path: /usr/share/filebeat/logs/filebeat01
   name: filebeat
   keepfiles: 5
   permissions: 0644
@@ -158,3 +235,4 @@ http.host: localhost
 http.port: 5067
 #http.named_pipe.user:
 #http.named_pipe.security_descriptor:
+#monitoring.enabled: true
