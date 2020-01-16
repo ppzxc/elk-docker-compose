@@ -21,6 +21,9 @@ services:
       - "traefik.tcp.routers.redis.rule=HostSNI(`*`)"
       - "traefik.tcp.routers.redis.entrypoints=frontend-redis"
       - "traefik.tcp.routers.redis.service=redis@docker"
+        #- "traefik.tcp.routers.redis.tls=true"
+        #- "traefik.tcp.routers.redis.tls.certresolver=lmc"
+        #- "traefik.tcp.routers.redis.tls.passthrough=true"
       - "traefik.tcp.services.redis.loadbalancer.server.port=6379"
 
         #es-grafana:
@@ -79,11 +82,6 @@ services:
     networks:
       elastic-network:
         ipv4_address: 172.18.0.2
-    healthcheck:
-      test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   es-mt02:
     build: ./elasticsearch
@@ -316,38 +314,38 @@ services:
       elastic-network:
         ipv4_address: 172.18.0.15
 
-    #es-ing01:
-    #build: ./elasticsearch
+  es-ing01:
+    build: ./elasticsearch
     #image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
-    #image: elasticsearch:7.5.1
-    #container_name: es-ing01
-    #environment:
-    #- network.host=_site_
-    #- node.name=es-ing01
-    #- node.master=false
-    #- node.data=false
-    #- node.ingest=true
-    #- cluster.remote.connect=false
-    #- cluster.name=nanoit-log-cluster
-    #- discovery.seed_hosts=es-mt01,es-mt02,es-mt03
-    #- cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
-    #- bootstrap.memory_lock=true
-    #- xpack.security.transport.ssl.enabled=true
-    #- xpack.security.enabled=true
-    #- xpack.monitoring.enabled=true
-    #- xpack.monitoring.collection.enabled=true
-    #- "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-    #ulimits:
-    #memlock:
-    #soft: -1
-    #hard: -1
-    #volumes:
-    #- /etc/localtime:/etc/localtime:ro
-    #- /data/elasticsearch/ingest01/:/usr/share/elasticsearch/data
-    #- /data/logs/elasticsearch/ingest01:/usr/share/elasticsearch/logs
-    #networks:
-    #elastic-network:
-    #ipv4_address: 172.18.0.14
+    image: elasticsearch:7.5.1
+    container_name: es-ing01
+    environment:
+      - network.host=_site_
+      - node.name=es-ing01
+      - node.master=false
+      - node.data=false
+      - node.ingest=true
+      - cluster.remote.connect=false
+      - cluster.name=nanoit-log-cluster
+      - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
+      - bootstrap.memory_lock=true
+      #- xpack.security.transport.ssl.enabled=true
+      #- xpack.security.enabled=true
+      - xpack.monitoring.enabled=true
+      - xpack.monitoring.collection.enabled=true
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /data/elasticsearch/ingest01/:/usr/share/elasticsearch/data
+      - /data/logs/elasticsearch/ingest01:/usr/share/elasticsearch/logs
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.14
 
   es-kib:
     image: docker.elastic.co/kibana/kibana:7.5.1
