@@ -7,7 +7,11 @@
 - other setting in network-create.sh
 
 ## Elastic Search
-- 3 node cluster
+- 9 node cluster
+- 3 master
+- 2 coordinate
+- 3 data
+- 1 ingest
 
 ## kibana
 - 

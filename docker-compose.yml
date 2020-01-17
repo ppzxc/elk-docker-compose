@@ -6,53 +6,69 @@ services:
     container_name: es-redis
     sysctls:
       - net.core.somaxconn=511
-        #ports:
-            #- "16379:6379"
-      #- 8579:6379
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /data/redis/:/data
-      - /data/logs/redis:/var/log/redis
+      - /home/operation/data/redis/:/data
+      - /home/operation/data/logs/redis:/var/log/redis
     networks:
       elastic-network:
         ipv4_address: 172.18.0.12
     labels:
       - "traefik.enable=true"
-      - "traefik.tcp.routers.redis.rule=HostSNI(`*`)"
-      - "traefik.tcp.routers.redis.entrypoints=frontend-redis"
-      - "traefik.tcp.routers.redis.service=redis@docker"
-        #- "traefik.tcp.routers.redis.tls=true"
-        #- "traefik.tcp.routers.redis.tls.certresolver=lmc"
-        #- "traefik.tcp.routers.redis.tls.passthrough=true"
-      - "traefik.tcp.services.redis.loadbalancer.server.port=6379"
+      - "traefik.tcp.routers.router-redis.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.router-redis.entrypoints=entrypoint-redis"
+      - "traefik.tcp.routers.router-redis.service=frontend-redis@docker"
+      - "traefik.tcp.services.frontend-redis.loadbalancer.server.port=6379"
 
-        #es-grafana:
-        #image: grafana/grafana:6.5.2
-        #container_name: es-grafana
-        #environment:
-        #- GF_SECURITY_ADMIN_PASSWORD=secret
-        #volumes:
-        #- /etc/localtime:/etc/localtime:ro
-        #depends_on:
-        #- es-mt01
-        #networks:
-        #elastic-network:
-        #ipv4_address: 172.18.0.13
-        #restart: always
-        #labels:
-        #- "traefik.enable=true"
-        #- "traefik.http.routers.es-grafana.rule=Host(`grafana.nanoit.gq`)"
-        #- "traefik.http.routers.es-grafana.entrypoints=http"
-        #- "traefik.http.routers.es-grafana.middlewares=redirect-to-https@docker"
-        #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-        #- "traefik.http.routers.inner-grafana-secured.rule=Host(`grafana.nanoit.gq`)"
-        #- "traefik.http.routers.inner-grafana-secured.entrypoints=https"
-        #- "traefik.http.routers.inner-grafana-secured.tls=true"
-        #- "traefik.http.routers.inner-grafana-secured.tls.certresolver=lmc"
+  es-grafana:
+    image: grafana/grafana:6.5.2
+    container_name: es-grafana
+    environment:
+            #- GF_SERVER_DOMAIN=monitor.nanoit.kr
+            #- GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
+      - GF_SECURITY_ADMIN_USER=nanoit
+      - GF_SECURITY_ADMIN_PASSWORD=secret
+      - GF_METRICS_ENABLED=true
+        #- GF_METRICS_BASIC_AUTH_USERNAME=${USERNAME}
+        #- GF_METRICS_BASIC_AUTH_PASSWORD=${PASSWORD}
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+        #- GF_INSTALL_PLUGINS=${PLUGINS}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - es-mt01
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.13
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=elastic-network"
+      - "traefik.http.services.dashboard-grafana.loadbalancer.server.port=3000"
+
+        #- "traefik.http.routers.router-grafana.rule=Host(`monitor.nanoit.kr`) && PathPrefix(`/grafana`)"
+        #- "traefik.http.routers.router-grafana.entrypoints=entrypoint-http"
+        #- "traefik.http.routers.router-grafana.middlewares=redirect-to-https@docker"
+        #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=entrypoint-https"
+
+        #- "traefik.http.routers.secured-grafana.rule=Host(`monitor.nanoit.kr`) && PathPrefix(`/grafana`)"
+        #- "traefik.http.routers.secured-grafana.entrypoints=entrypoint-https"
+        #- "traefik.http.routers.secured-grafana.service=dashboard-grafana@docker"
+        #- "traefik.http.routers.secured-grafana.tls=true"
+        #- "traefik.http.routers.secured-grafana.tls.certresolver=nanoit-cert"
+        #- "traefik.http.routers.secured-grafana.middlewares=stripprefix-grafana"
+        #- "traefik.http.middlewares.stripprefix-grafana.stripprefix.prefixes=/grafana"
+
+      - "traefik.http.routers.secured-grafana.rule=Host(`monitor.nanoit.kr`)"
+      - "traefik.http.routers.secured-grafana.entrypoints=entrypoint-grafana"
+      - "traefik.http.routers.secured-grafana.service=dashboard-grafana@docker"
+      - "traefik.http.routers.secured-grafana.tls=true"
+      - "traefik.http.routers.secured-grafana.tls.certresolver=nanoit-cert"
+        #- "traefik.http.routers.secured-grafana.middlewares=stripprefix-grafana"
+        #- "traefik.http.middlewares.stripprefix-grafana.stripprefix.prefixes=/grafana"
         
   es-mt01:
     build: ./elasticsearch
-    #image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
     image: elasticsearch:7.5.1
     container_name: es-mt01
     environment:
@@ -77,8 +93,8 @@ services:
         hard: -1
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /data/elasticsearch/master01/:/usr/share/elasticsearch/data
-      - /data/logs/elasticsearch/master01:/usr/share/elasticsearch/logs
+      - /home/operation/data/elasticsearch/master01/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/master01:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.2
@@ -109,9 +125,9 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - /data/elasticsearch/master02/:/usr/share/elasticsearch/data
+      - /home/operation/data/elasticsearch/master02/:/usr/share/elasticsearch/data
       - /etc/localtime:/etc/localtime:ro
-      - /data/logs/elasticsearch/master02:/usr/share/elasticsearch/logs
+      - /home/operation/data/logs/elasticsearch/master02:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.3
@@ -143,8 +159,8 @@ services:
         hard: -1
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /data/elasticsearch/master03/:/usr/share/elasticsearch/data
-      - /data/logs/elasticsearch/master03:/usr/share/elasticsearch/logs
+      - /home/operation/data/elasticsearch/master03/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/master03:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.4
@@ -176,8 +192,8 @@ services:
         hard: -1
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /data/elasticsearch/coordinate01/:/usr/share/elasticsearch/data
-      - /data/logs/elasticsearch/coordinate01:/usr/share/elasticsearch/logs
+      - /home/operation/data/elasticsearch/coordinate01/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/coordinate01:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.5
@@ -209,8 +225,8 @@ services:
         hard: -1
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /data/elasticsearch/coordinate02/:/usr/share/elasticsearch/data
-      - /data/logs/elasticsearch/coordinate02:/usr/share/elasticsearch/logs
+      - /home/operation/data/elasticsearch/coordinate02/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/coordinate02:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.6
@@ -242,8 +258,8 @@ services:
         hard: -1
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /data/elasticsearch/data01/:/usr/share/elasticsearch/data
-      - /data/logs/elasticsearch/data01:/usr/share/elasticsearch/logs
+      - /home/operation/data/elasticsearch/data01/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/data01:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.7
@@ -275,8 +291,8 @@ services:
         hard: -1
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /data/elasticsearch/data02/:/usr/share/elasticsearch/data
-      - /data/logs/elasticsearch/data02:/usr/share/elasticsearch/logs
+      - /home/operation/data/elasticsearch/data02/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/data02:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.8
@@ -308,8 +324,8 @@ services:
         hard: -1
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /data/elasticsearch/data03/:/usr/share/elasticsearch/data
-      - /data/logs/elasticsearch/data03:/usr/share/elasticsearch/logs
+      - /home/operation/data/elasticsearch/data03/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/data03:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.15
@@ -341,8 +357,8 @@ services:
         hard: -1
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /data/elasticsearch/ingest01/:/usr/share/elasticsearch/data
-      - /data/logs/elasticsearch/ingest01:/usr/share/elasticsearch/logs
+      - /home/operation/data/elasticsearch/ingest01/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/ingest01:/usr/share/elasticsearch/logs
     networks:
       elastic-network:
         ipv4_address: 172.18.0.14
@@ -351,29 +367,36 @@ services:
     image: docker.elastic.co/kibana/kibana:7.5.1
     container_name: es-kib
     environment:
+      - server.name=es-kib
       - server.host=_site_
+      - server.port=5601
       - elasticsearch.hosts=_site_
+        #- server.basePath=/kibana
+        #- server.rewriteBasePath=false
     volumes:
       - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
       - /etc/localtime:/etc/localtime:ro
-        #ports:
-            #- 5601:5601
     networks:
       elastic-network:
         ipv4_address: 172.18.0.9
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03']
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.kibana.rule=Host(`kibana.nanoit.gq`)"
-      - "traefik.http.routers.kibana.entrypoints=http"
-      - "traefik.http.routers.kibana.middlewares=redirect-to-https@docker"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.docker.network=elastic-network"
+      - "traefik.http.services.dashboard-kibana.loadbalancer.server.port=5601"
 
-      - "traefik.http.routers.inner-kibana-secured.rule=Host(`kibana.nanoit.gq`)"
-      - "traefik.http.routers.inner-kibana-secured.entrypoints=https"
-      - "traefik.http.routers.inner-kibana-secured.tls=true"
-      - "traefik.http.routers.inner-kibana-secured.tls.certresolver=lmc"
+        #- "traefik.http.routers.router-kibana.rule=Host(`monitor.nanoit.kr`)"
+        #- "traefik.http.routers.router-kibana.entrypoints=entrypoint-http"
+        #- "traefik.http.routers.router-kibana.middlewares=redirect-to-https@docker"
+        #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=entrypoint-https"
 
+      - "traefik.http.routers.secured-kibana.rule=Host(`monitor.nanoit.kr`)"
+      - "traefik.http.routers.secured-kibana.entrypoints=entrypoint-kibana"
+      - "traefik.http.routers.secured-kibana.service=dashboard-kibana@docker"
+      - "traefik.http.routers.secured-kibana.tls=true"
+      - "traefik.http.routers.secured-kibana.tls.certresolver=nanoit-cert"
+        #- "traefik.http.routers.secured-kibana.middlewares=stripprefix-kibana"
+        #- "traefik.http.middlewares.stripprefix-kibana.stripprefix.prefixes=/kibana"
    
   es-idx:
     build: ./logstash
@@ -404,8 +427,8 @@ services:
       - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
       - /:/hostfs:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /data/logs/elasticsearch/metricbeat01:/usr/share/metricbeat/logs
-      - /data/elasticsearch/metricbeat01/:/usr/share/metricbeat/data
+      - /home/operation/data/logs/elasticsearch/metricbeat01:/usr/share/metricbeat/logs
+      - /home/operation/data/elasticsearch/metricbeat01/:/usr/share/metricbeat/data
     environment:
       - name=LOG-MONITOR-SERVER
       - cap-add=sys_ptrace
@@ -428,11 +451,11 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /data/elasticsearch/filebeat01/:/usr/share/filebeat/data
-      - /data/logs/elasticsearch:/usr/share/filebeat/logs/elasticsearch
-      - /data/logs/elasticsearch/filebeat01:/usr/share/filebeat/logs/filebeat01
-      - /data/logs/traefik:/usr/share/filebeat/logs/traefik
-      - /data/redis/redis.log:/usr/share/filebeat/logs/redis/redis.log
+      - /home/operation/data/elasticsearch/filebeat01/:/usr/share/filebeat/data
+      - /home/operation/data/logs/elasticsearch:/usr/share/filebeat/logs/elasticsearch
+      - /home/operation/data/logs/elasticsearch/filebeat01:/usr/share/filebeat/logs/filebeat01
+      - /home/operation/data/logs/traefik:/usr/share/filebeat/logs/traefik
+      - /home/operation/data/redis/redis.log:/usr/share/filebeat/logs/redis/redis.log
       - /var/log:/usr/share/filebeat/logs/system
     network_mode: host
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
