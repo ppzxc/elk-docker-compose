@@ -24,8 +24,8 @@ services:
     image: grafana/grafana:6.5.2
     container_name: es-grafana
     environment:
-            #- GF_SERVER_DOMAIN=monitor.nanoit.kr
-            #- GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
+      - GF_SERVER_DOMAIN=monitor.nanoit.kr
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
       - GF_SECURITY_ADMIN_USER=nanoit
       - GF_SECURITY_ADMIN_PASSWORD=secret
       - GF_METRICS_ENABLED=true
@@ -46,10 +46,13 @@ services:
       - "traefik.docker.network=elastic-network"
       - "traefik.http.services.dashboard-grafana.loadbalancer.server.port=3000"
 
-        #- "traefik.http.routers.router-grafana.rule=Host(`monitor.nanoit.kr`) && PathPrefix(`/grafana`)"
-        #- "traefik.http.routers.router-grafana.entrypoints=entrypoint-http"
-        #- "traefik.http.routers.router-grafana.middlewares=redirect-to-https@docker"
-        #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=entrypoint-https"
+      - "traefik.http.routers.router-grafana.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/grafana`) || PathPrefix(`/grafana/`))"
+      - "traefik.http.routers.router-grafana.entrypoints=entrypoint-http"
+      - "traefik.http.routers.router-grafana.middlewares=stripprefix-grafana@docker"
+      - "traefik.http.middlewares.stripprefix-grafana.stripprefix.prefixes=/grafana"
+        
+      #- "traefik.http.routers.router-grafana.middlewares=redirect-to-https@docker"
+      #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=entrypoint-https"
 
         #- "traefik.http.routers.secured-grafana.rule=Host(`monitor.nanoit.kr`) && PathPrefix(`/grafana`)"
         #- "traefik.http.routers.secured-grafana.entrypoints=entrypoint-https"
@@ -57,13 +60,13 @@ services:
         #- "traefik.http.routers.secured-grafana.tls=true"
         #- "traefik.http.routers.secured-grafana.tls.certresolver=nanoit-cert"
         #- "traefik.http.routers.secured-grafana.middlewares=stripprefix-grafana"
-        #- "traefik.http.middlewares.stripprefix-grafana.stripprefix.prefixes=/grafana"
+        #- "traefik.http.middlewares.stripprefix-grafana.stripprefix.prefixes=/grafana,/grafana/"
 
-      - "traefik.http.routers.secured-grafana.rule=Host(`monitor.nanoit.kr`)"
-      - "traefik.http.routers.secured-grafana.entrypoints=entrypoint-grafana"
-      - "traefik.http.routers.secured-grafana.service=dashboard-grafana@docker"
-      - "traefik.http.routers.secured-grafana.tls=true"
-      - "traefik.http.routers.secured-grafana.tls.certresolver=nanoit-cert"
+        #- "traefik.http.routers.secured-grafana.rule=Host(`monitor.nanoit.kr`)"
+        #- "traefik.http.routers.secured-grafana.entrypoints=entrypoint-grafana"
+        #- "traefik.http.routers.secured-grafana.service=dashboard-grafana@docker"
+        #- "traefik.http.routers.secured-grafana.tls=true"
+        #- "traefik.http.routers.secured-grafana.tls.certresolver=nanoit-cert"
         #- "traefik.http.routers.secured-grafana.middlewares=stripprefix-grafana"
         #- "traefik.http.middlewares.stripprefix-grafana.stripprefix.prefixes=/grafana"
         
@@ -375,6 +378,7 @@ services:
         #- server.rewriteBasePath=false
     volumes:
       - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+      - /home/operation/data/logs/elasticsearch/kibana01/kibana.log:/usr/share/kibana/log
       - /etc/localtime:/etc/localtime:ro
     networks:
       elastic-network:
@@ -390,11 +394,12 @@ services:
         #- "traefik.http.routers.router-kibana.middlewares=redirect-to-https@docker"
         #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=entrypoint-https"
 
-      - "traefik.http.routers.secured-kibana.rule=Host(`monitor.nanoit.kr`)"
-      - "traefik.http.routers.secured-kibana.entrypoints=entrypoint-kibana"
+      - "traefik.http.routers.secured-kibana.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/kibana`) || PathPrefix(`/kibana/`))"
+      - "traefik.http.routers.secured-kibana.entrypoints=entrypoint-http"
       - "traefik.http.routers.secured-kibana.service=dashboard-kibana@docker"
-      - "traefik.http.routers.secured-kibana.tls=true"
-      - "traefik.http.routers.secured-kibana.tls.certresolver=nanoit-cert"
+
+        #- "traefik.http.routers.secured-kibana.tls=true"
+        #- "traefik.http.routers.secured-kibana.tls.certresolver=nanoit-cert"
         #- "traefik.http.routers.secured-kibana.middlewares=stripprefix-kibana"
         #- "traefik.http.middlewares.stripprefix-kibana.stripprefix.prefixes=/kibana"
    
@@ -437,6 +442,26 @@ services:
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
     healthcheck:
       test: metricbeat test config
+      interval: 30s
+      timeout: 15s
+      retries: 5
+
+  es-htb:
+    image: docker.elastic.co/beats/heartbeat:7.5.1
+    container_name: es-htb
+    command: ["-e", "--strict.perms=false"]
+    user: root
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./heartbeat/heartbeat.yml:/usr/share/heartbeat/heartbeat.yml:ro
+      - /home/operation/data/logs/elasticsearch/heartbeat01:/usr/share/heartbeat/logs
+      - /home/operation/data/elasticsearch/metricbeat01/:/usr/share/heartbeat/data
+    environment:
+      - name=LOG-MONITOR-SERVER
+    network_mode: host
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
+    healthcheck:
+      test: heartbeat test config
       interval: 30s
       timeout: 15s
       retries: 5

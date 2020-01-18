@@ -1,0 +1,104 @@
+heartbeat.config.monitors:
+  path: ${path.config}/monitors.d/*.yml
+  reload.enabled: false
+  reload.period: 5s
+
+heartbeat.monitors:
+- type: http
+  urls: ["http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200"]
+  schedule: '@every 5s'
+  timeout: 16s
+- type: icmp
+  schedule: '@every 5s'
+  hosts: ["172.18.0.1"]
+  ipv4: true
+  ipv6: false
+  mode: any
+  timeout: 16s
+
+#==================== Elasticsearch template setting ==========================
+setup.template.settings:
+  index.number_of_shards: 1
+  index.codec: best_compression
+  #_source.enabled: false
+
+#================================ General =====================================
+name: LOG-MONITORING-SERVER
+tags: ["master01", "master02", "master03"]
+
+#fields:
+#  env: staging
+
+#============================== Kibana =====================================
+setup.kibana:
+  host: "172.18.0.9:5601"
+  #space.id:
+
+#================================ Outputs =====================================
+#-------------------------- Elasticsearch output ------------------------------
+output.elasticsearch:
+  hosts: ["172.18.0.2:9200"]
+  #protocol: "https"
+  #username: "elastic"
+  #password: "changeme"
+
+
+#------------------------------- Redis output ----------------------------------
+#output.redis:
+  #enabled: true
+  #codec.json:
+    #pretty: false
+    #escape_html: false
+  #hosts: ["localhost:6379"]
+  #key: heartbeat
+  #password:
+  #db: 0
+  #datatype: list
+  #worker: 1
+  #loadbalance: true
+  #timeout: 5s
+  #max_retries: 3
+  #backoff.init: 1s
+  #backoff.max: 60s
+  #bulk_max_size: 2048
+  #proxy_url:
+  #proxy_use_local_resolver: false
+  #ssl.enabled: true
+  #ssl.verification_mode: full
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
+  #ssl.renegotiation: never
+
+#================================ Processors =====================================
+
+processors:
+  - add_observer_metadata:
+  #geo:
+    #name: us-east-1a
+    #location: "37.926868, -78.024902"
+
+#================================ Logging =====================================
+http.enabled: true
+http.port: 5068
+
+logging.level: info
+#logging.selectors: ["*"]
+logging.to_files: true
+logging.files:
+  path: /usr/share/heartbeat/logs/heartbeat
+  name: heartbeat
+  keepfiles: 5
+  permissions: 0644
+  #interval: 0
+  #rotateonstartup: true
+  #logging.json: true
+
+#============================== X-Pack Monitoring ===============================
+#monitoring.enabled: false
+#monitoring.cluster_uuid:
+#monitoring.elasticsearch:
