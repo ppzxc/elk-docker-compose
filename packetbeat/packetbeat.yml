@@ -1,0 +1,213 @@
+#============================== Network device ================================
+packetbeat.interfaces.device: any
+#packetbeat.interfaces.type: pcap
+#packetbeat.interfaces.snaplen: 65535
+#packetbeat.interfaces.buffer_size_mb: 30
+#packetbeat.interfaces.with_vlans: true
+#packetbeat.interfaces.bpf_filter:
+
+#================================== Flows =====================================
+packetbeat.flows:
+  timeout: 30s
+  period: 10s
+
+#========================== Transaction protocols =============================
+packetbeat.protocols:
+- type: icmp
+  enabled: true
+
+#- type: amqp
+  #ports: [5672]
+
+#- type: cassandra
+  #ports: [9042]
+
+- type: dhcpv4
+  ports: [67, 68]
+
+- type: dns
+  ports: [53]
+
+- type: http
+  ports: [80, 443, 3000, 5044, 5601, 8578, 9000, 9200, 9300, 9600, 8080, 8000, 5000, 8002]
+  #send_headers: false
+  #send_all_headers: false
+  #include_body_for: []
+  #include_request_body_for: []
+  #include_response_body_for: []
+  #decode_body: true
+  #split_cookie: false
+  #real_ip_header:
+  #send_request: false
+  #send_response: false
+  #keep_null: false
+  #transaction_timeout: 10s
+  #max_message_size: 10485760
+
+#- type: memcache
+  #ports: [11211]
+
+#- type: mysql
+  #ports: [3306,3307]
+
+#- type: pgsql
+  #ports: [5432]
+
+- type: redis
+  #enabled: true
+  ports: [6379]
+  #send_request: false
+  #send_response: false
+  #keep_null: false
+  #transaction_timeout: 10s
+  #queue_max_bytes: 1048576
+  #queue_max_messages: 20000
+    
+#- type: thrift
+  #ports: [9090]
+
+#- type: mongodb
+  #ports: [27017]
+
+#- type: nfs
+  #ports: [2049]
+
+- type: tls
+  ports:
+    - 443   # HTTPS
+    - 993   # IMAPS
+    - 995   # POP3S
+    - 5223  # XMPP over SSL
+    - 8443
+    - 8883  # Secure MQTT
+    - 9243  # Elasticsearch
+
+  #fingerprints: [sha1]
+  #send_certificates: true
+  #include_raw_certificates: false
+  #keep_null: false
+
+#==================== Elasticsearch template setting ==========================
+
+setup.template.settings:
+  index.number_of_shards: 1
+  #index.codec: best_compression
+  #_source.enabled: false
+
+#=========================== Monitored processes ==============================
+##packetbeat.procs.enabled: false
+packetbeat.ignore_outgoing: false
+
+#================================ General =====================================
+name: LOG-MONITORING-SERVER
+#tags: ["service-X", "web-tier"]
+#fields:
+#  env: staging
+
+#============================== Dashboards =====================================
+#setup.dashboards.enabled: true
+#setup.dashboards.url:
+
+#============================== Kibana =====================================
+setup.kibana:
+  host: "172.18.0.9:5601"
+  #space.id:
+  path: "/kibana"
+
+#================================ Outputs =====================================
+#-------------------------- Elasticsearch output ------------------------------
+output.elasticsearch:
+  hosts: ["172.18.0.2:9200"]
+  #protocol: "https"
+  #username: "elastic"
+  #password: "changeme"
+  #
+#------------------------------- Redis output ----------------------------------
+#output.redis:
+  #enabled: true
+  #codec.json:
+    #pretty: false
+  #escape_html: false
+  #hosts: ["172.18.0.12:6379"]
+  #key: packetbeat
+  #password: Y&hZ&lgooHaW
+  #db: 3
+  #datatype: list
+  #worker: 1
+  #loadbalance: true
+  #timeout: 5s
+  #max_retries: 3
+  #backoff.init: 1s
+  #backoff.max: 60s
+  #bulk_max_size: 2048
+  #proxy_url:
+  #proxy_use_local_resolver: false
+  #ssl.enabled: true
+  #ssl.verification_mode: full
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
+  #ssl.renegotiation: never
+
+#================================ Processors =====================================
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+
+#============================== Dashboards =====================================
+setup.dashboards.enabled: true
+#setup.dashboards.directory: ${path.home}/kibana
+#setup.dashboards.url:
+#setup.dashboards.file:
+#setup.dashboards.beat: packetbeat
+#setup.dashboards.kibana_index: .kibana
+#setup.dashboards.index:
+setup.dashboards.always_kibana: true
+setup.dashboards.retry.enabled: true
+#setup.dashboards.retry.interval: 1s
+#setup.dashboards.retry.maximum: 0
+
+#============================== Template =====================================
+setup.template.enabled: true
+setup.template.name: "packetbeat-%{[agent.version]}"
+setup.template.pattern: "packetbeat-%{[agent.version]}-*"
+setup.template.fields: "${path.config}/fields.yml"
+#setup.template.append_fields:
+#- name: field_name
+#  type: field_type
+#setup.template.json.enabled: false
+#setup.template.json.path: "${path.config}/template.json"
+#setup.template.json.name: ""
+#setup.template.overwrite: false
+setup.template.settings:
+  index:
+    number_of_shards: 6
+    codec: best_compression
+    #number_of_routing_shards: 30
+  #_source:
+    #enabled: false
+
+#================================ Logging =====================================
+logging.level: debug
+#logging.selectors: ["*"]
+logging.to_files: true
+logging.files:
+  path: /usr/share/packetbeat/logs
+  name: packetbeat
+  keepfiles: 5
+  permissions: 0644
+
+#============================== X-Pack Monitoring ===============================
+#monitoring.enabled: false
+#monitoring.cluster_uuid:
+#monitoring.elasticsearch:
+#
+#================================ HTTP Endpoint ======================================
+http.enabled: true
+http.host: localhost
+http.port: 5069

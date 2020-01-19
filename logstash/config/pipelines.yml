@@ -9,6 +9,12 @@
 - pipeline.id: metricbeat
   #queue.type: persisted
   path.config: "/usr/share/logstash/pipeline/metricbeat.conf"
+- pipeline.id: heartbeat
+  #queue.type: persisted
+  path.config: "/usr/share/logstash/pipeline/heartbeat.conf"
+- pipeline.id: packetbeat
+  #queue.type: persisted
+  path.config: "/usr/share/logstash/pipeline/packetbeat.conf"
 
   #pipeline.id: mylogs
   #config.string: "input { generator {} } filter { sleep { time => 1 } } output { stdout { codec => dots } }"

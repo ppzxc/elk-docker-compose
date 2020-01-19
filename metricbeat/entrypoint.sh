@@ -19,7 +19,7 @@ echo ""
 echo "Cluster is green. Fine ! (But you could maybe try to have it GREEN ;))"
 echo ""
 
-while ! curl -s -I http://172.18.0.9:5601/api/status | grep "200 OK" > /dev/null
+while ! curl -s -I http://172.18.0.9:5601/kibana/api/status | grep "200 OK" > /dev/null
 do
     echo "==> Waiting for kibana status" && sleep 1
 done

@@ -44,23 +44,28 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=elastic-network"
-      - "traefik.http.services.dashboard-grafana.loadbalancer.server.port=3000"
+      #- "traefik.http.services.dashboard-grafana.loadbalancer.server.port=3000"
+      - "traefik.http.services.dashboard-secured-grafana.loadbalancer.server.port=3000"
 
-      - "traefik.http.routers.router-grafana.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/grafana`) || PathPrefix(`/grafana/`))"
-      - "traefik.http.routers.router-grafana.entrypoints=entrypoint-http"
-      - "traefik.http.routers.router-grafana.middlewares=stripprefix-grafana@docker"
-      - "traefik.http.middlewares.stripprefix-grafana.stripprefix.prefixes=/grafana"
+      #- "traefik.http.routers.router-grafana.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/grafana`) || PathPrefix(`/grafana/`))"
+      #- "traefik.http.routers.router-grafana.entrypoints=entrypoint-http"
+      #- "traefik.http.routers.router-grafana.middlewares=stripprefix-grafana@docker"
+      #- "traefik.http.middlewares.stripprefix-grafana.stripprefix.prefixes=/grafana"
+      #- "traefik.http.routers.router-grafana.service=dashboard-grafana@docker"
+      #- "traefik.http.routers.router-grafana.middlewares=redirect-to-https@docker"
+      #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=entrypoint-https"
         
       #- "traefik.http.routers.router-grafana.middlewares=redirect-to-https@docker"
       #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=entrypoint-https"
 
-        #- "traefik.http.routers.secured-grafana.rule=Host(`monitor.nanoit.kr`) && PathPrefix(`/grafana`)"
-        #- "traefik.http.routers.secured-grafana.entrypoints=entrypoint-https"
-        #- "traefik.http.routers.secured-grafana.service=dashboard-grafana@docker"
-        #- "traefik.http.routers.secured-grafana.tls=true"
-        #- "traefik.http.routers.secured-grafana.tls.certresolver=nanoit-cert"
-        #- "traefik.http.routers.secured-grafana.middlewares=stripprefix-grafana"
-        #- "traefik.http.middlewares.stripprefix-grafana.stripprefix.prefixes=/grafana,/grafana/"
+      #- "traefik.http.routers.secured-grafana.rule=Host(`monitor.nanoit.kr`) && PathPrefix(`/grafana`)"
+      - "traefik.http.routers.secured-grafana.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/grafana`) || PathPrefix(`/grafana/`))"
+      - "traefik.http.routers.secured-grafana.entrypoints=entrypoint-https"
+      - "traefik.http.routers.secured-grafana.service=dashboard-secured-grafana@docker"
+      - "traefik.http.routers.secured-grafana.tls=true"
+      - "traefik.http.routers.secured-grafana.tls.certresolver=nanoit-cert"
+      - "traefik.http.routers.secured-grafana.middlewares=stripprefix-grafana"
+      - "traefik.http.middlewares.stripprefix-grafana.stripprefix.prefixes=/grafana,/grafana/"
 
         #- "traefik.http.routers.secured-grafana.rule=Host(`monitor.nanoit.kr`)"
         #- "traefik.http.routers.secured-grafana.entrypoints=entrypoint-grafana"
@@ -389,19 +394,11 @@ services:
       - "traefik.docker.network=elastic-network"
       - "traefik.http.services.dashboard-kibana.loadbalancer.server.port=5601"
 
-        #- "traefik.http.routers.router-kibana.rule=Host(`monitor.nanoit.kr`)"
-        #- "traefik.http.routers.router-kibana.entrypoints=entrypoint-http"
-        #- "traefik.http.routers.router-kibana.middlewares=redirect-to-https@docker"
-        #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=entrypoint-https"
-
       - "traefik.http.routers.secured-kibana.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/kibana`) || PathPrefix(`/kibana/`))"
-      - "traefik.http.routers.secured-kibana.entrypoints=entrypoint-http"
+      - "traefik.http.routers.secured-kibana.entrypoints=entrypoint-https"
       - "traefik.http.routers.secured-kibana.service=dashboard-kibana@docker"
-
-        #- "traefik.http.routers.secured-kibana.tls=true"
-        #- "traefik.http.routers.secured-kibana.tls.certresolver=nanoit-cert"
-        #- "traefik.http.routers.secured-kibana.middlewares=stripprefix-kibana"
-        #- "traefik.http.middlewares.stripprefix-kibana.stripprefix.prefixes=/kibana"
+      - "traefik.http.routers.secured-kibana.tls=true"
+      - "traefik.http.routers.secured-kibana.tls.certresolver=nanoit-cert"
    
   es-idx:
     build: ./logstash
@@ -455,7 +452,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./heartbeat/heartbeat.yml:/usr/share/heartbeat/heartbeat.yml:ro
       - /home/operation/data/logs/elasticsearch/heartbeat01:/usr/share/heartbeat/logs
-      - /home/operation/data/elasticsearch/metricbeat01/:/usr/share/heartbeat/data
+      - /home/operation/data/elasticsearch/heartbeat01/:/usr/share/heartbeat/data
     environment:
       - name=LOG-MONITOR-SERVER
     network_mode: host
@@ -468,7 +465,7 @@ services:
 
   es-ftb:
     build: ./filebeat
-    image: filebeat_host:7.5.1
+    image: filebeat:7.5.1
     container_name: es-ftb
     command: -e
     user: root
@@ -487,6 +484,30 @@ services:
     command: ["--strict.perms=false"]
     healthcheck:
       test: filebeat test config
+      interval: 30s
+      timeout: 15s
+      retries: 5
+
+  es-ptb:
+    build: ./packetbeat
+    image: packetbeat:7.5.1
+    #image: docker.elastic.co/beats/packetbeat:7.5.1
+    container_name: es-ptb
+    command: ["-e", "--strict.perms=false"]
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
+      - ./packetbeat/packetbeat.yml:/usr/share/packetbeat/packetbeat.yml:ro
+      - /home/operation/data/elasticsearch/packetbeat/:/usr/share/packetbeat/data
+      - /home/operation/data/logs/elasticsearch/packetbeat01:/usr/share/packetbeat/logs
+    network_mode: host
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
+    environment:
+      - cap-add=NET_RAW
+      - cap-add=NET_ADMIN
+    healthcheck:
+      test: packetbeat test config
       interval: 30s
       timeout: 15s
       retries: 5

@@ -4,35 +4,156 @@ heartbeat.config.monitors:
   reload.period: 5s
 
 heartbeat.monitors:
-- type: http
-  urls: ["http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200"]
-  schedule: '@every 5s'
-  timeout: 16s
-- type: icmp
-  schedule: '@every 5s'
-  hosts: ["172.18.0.1"]
+- type: icmp # monitor type `icmp` (requires root) uses ICMP Echo Request to ping
+  name: host-machine
+  enabled: true
+  schedule: '*/5 * * * * * *' # exactly every 5 seconds like 10:00:00, 10:00:05, ...
+  hosts: ["localhost"]
   ipv4: true
-  ipv6: false
-  mode: any
+  #ipv6: true
+  #mode: any
   timeout: 16s
+  #wait: 1s
+  #tags: ["service-X", "web-tier"]
+  #fields:
+    #env: staging
+  #fields_under_root: false
+  #watch.poll_file:
+    #path:
+    #interval: 5s
+  #keep_null: false
+ 
+  path: /path/to/my/monitors.d/*.yml
+  reload.enabled: true
+  reload.period: 1s
+
+- type: tcp
+  name: es-idx
+  enabled: true
+  schedule: '@every 5s' # every 5 seconds from start of beat
+  hosts: ["172.18.0.12:6379"]
+  ipv4: true
+  ipv6: true
+  mode: any
+  
+- type: tcp
+  name: redis
+  enabled: true
+  schedule: '@every 5s' # every 5 seconds from start of beat
+  hosts: ["172.18.0.12:6379"]
+  ipv4: true
+  ipv6: true
+  mode: any
+  # ports: [80, 9200, 5044]
+  #timeout: 16s
+    #check:
+    #send: ''
+    #receive: ''
+  # proxy_url: ''
+  #proxy_use_local_resolver: false
+  #ssl:
+    #certificate_authorities: ['']
+    #supported_protocols: ["TLSv1.0", "TLSv1.1", "TLSv1.2"]
+  #watch.poll_file:
+    #path:
+    #interval: 5s
+    #keep_null: false
+    
+- type: http
+  name: es-kib
+  enabled: true
+  schedule: '@every 5s'
+  urls: ["http://172.18.0.9:5601"]
+  ipv4: true
+  #ipv6: true
+  mode: any
+ 
+- type: http
+  name: es-maseters
+  enabled: true
+  schedule: '@every 5s'
+  urls: ["http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200"]
+  ipv4: true
+  #ipv6: true
+  mode: any
+  #watch.poll_file:
+    #path:
+    #interval: 5s
+  #proxy_url: ''
+  #timeout: 16s
+  #username: ''
+  #password: ''
+  #ssl:
+    #certificate_authorities: ['']
+    #supported_protocols: ["TLSv1.0", "TLSv1.1", "TLSv1.2"]
+  #check.request:
+    #method: "GET"
+    #headers:
+    #body:
+  #check.response:
+    #status: 0
+    #headers:
+    #body:
+    #json:
+    #- description: Explanation of what the check does
+      #  condition:
+      #    equals:
+      #      myField: expectedValue
+  #watch.poll_file:
+    #path:
+    #interval: 5s
+  #keep_null: false
+
+heartbeat.scheduler:
+  #limit: 0
+  #location: '
 
 #==================== Elasticsearch template setting ==========================
 setup.template.settings:
-  index.number_of_shards: 1
+  index.number_of_shards: 6
   index.codec: best_compression
   #_source.enabled: false
+#============================== Template =====================================
+setup.template.enabled: true
+setup.template.name: "heartbeat-%{[agent.version]}"
+setup.template.pattern: "heartbeat-%{[agent.version]}-*"
+setup.template.fields: "${path.config}/fields.yml"
+#setup.template.append_fields:
+#- name: field_name
+#  type: field_type
+#setup.template.json.enabled: false
+#setup.template.json.path: "${path.config}/template.json"
+#setup.template.json.name: ""
+#setup.template.overwrite: false
+setup.template.settings:
+  index.number_of_shards: 6
+  index.codec: best_compression
+  #_source.enabled: false
+  #codec: best_compression
+  #number_of_routing_shards: 30
 
 #================================ General =====================================
 name: LOG-MONITORING-SERVER
-tags: ["master01", "master02", "master03"]
-
+tags: ["master01", "master02", "master03", "es-idx", "es-kib", "redis"]
 #fields:
 #  env: staging
 
 #============================== Kibana =====================================
 setup.kibana:
   host: "172.18.0.9:5601"
-  #space.id:
+  protocol: "https"
+  #username: "elastic"
+  #password: "changeme"
+  path: "/kibana"
+  #ssl.enabled: true
+  #ssl.verification_mode: full
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
 
 #================================ Outputs =====================================
 #-------------------------- Elasticsearch output ------------------------------
@@ -41,7 +162,31 @@ output.elasticsearch:
   #protocol: "https"
   #username: "elastic"
   #password: "changeme"
-
+  #parameters:
+    #param1: value1
+    #param2: value2
+  #worker: 1
+  index: "heartbeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+  #pipeline: ""
+  #path: "/elasticsearch"
+  #headers:
+  #proxy_url: http://proxy:3128
+  #proxy_disable: false
+  #max_retries: 3
+  #bulk_max_size: 50
+  #backoff.init: 1s
+  #backoff.max: 60s
+  #timeout: 90
+  #ssl.enabled: true
+  #ssl.verification_mode: full
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
+  #ssl.renegotiation: never
 
 #------------------------------- Redis output ----------------------------------
 #output.redis:
@@ -49,10 +194,10 @@ output.elasticsearch:
   #codec.json:
     #pretty: false
     #escape_html: false
-  #hosts: ["localhost:6379"]
+  #hosts: ["172.18.0.12:6379"]
   #key: heartbeat
-  #password:
-  #db: 0
+  #password: Y&hZ&lgooHaW
+  #db: 2
   #datatype: list
   #worker: 1
   #loadbalance: true
@@ -83,14 +228,11 @@ processors:
     #location: "37.926868, -78.024902"
 
 #================================ Logging =====================================
-http.enabled: true
-http.port: 5068
-
 logging.level: info
 #logging.selectors: ["*"]
 logging.to_files: true
 logging.files:
-  path: /usr/share/heartbeat/logs/heartbeat
+  path: /usr/share/heartbeat/logs
   name: heartbeat
   keepfiles: 5
   permissions: 0644
@@ -98,7 +240,10 @@ logging.files:
   #rotateonstartup: true
   #logging.json: true
 
-#============================== X-Pack Monitoring ===============================
-#monitoring.enabled: false
-#monitoring.cluster_uuid:
-#monitoring.elasticsearch:
+#================================ HTTP Endpoint ======================================
+http.enabled: true
+http.host: localhost
+http.port: 5068
+##http.named_pipe.user:
+##http.named_pipe.security_descriptor:
+##monitoring.enabled: true
