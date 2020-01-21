@@ -1,52 +1,42 @@
+############################# Heartbeat ######################################
 heartbeat.config.monitors:
   path: ${path.config}/monitors.d/*.yml
   reload.enabled: false
   reload.period: 5s
 
 heartbeat.monitors:
-- type: icmp # monitor type `icmp` (requires root) uses ICMP Echo Request to ping
-  name: host-machine
+- type: icmp
+  name: Host-Machine
   enabled: true
-  schedule: '*/5 * * * * * *' # exactly every 5 seconds like 10:00:00, 10:00:05, ...
+  schedule: '*/5 * * * * * *'
   hosts: ["localhost"]
   ipv4: true
-  #ipv6: true
-  #mode: any
+  ipv6: true
+  mode: any
   timeout: 16s
-  #wait: 1s
+  wait: 1s
   #tags: ["service-X", "web-tier"]
   #fields:
-    #env: staging
+  #  env: staging
   #fields_under_root: false
   #watch.poll_file:
     #path:
     #interval: 5s
-  #keep_null: false
- 
-  path: /path/to/my/monitors.d/*.yml
-  reload.enabled: true
-  reload.period: 1s
+  #path: /path/to/my/monitors.d/*.yml
+  #reload.enabled: true
+  #reload.period: 1s
 
 - type: tcp
   name: es-idx
   enabled: true
   schedule: '@every 5s' # every 5 seconds from start of beat
-  hosts: ["172.18.0.12:6379"]
-  ipv4: true
-  ipv6: true
-  mode: any
-  
-- type: tcp
-  name: redis
-  enabled: true
-  schedule: '@every 5s' # every 5 seconds from start of beat
-  hosts: ["172.18.0.12:6379"]
+  hosts: ["172.18.0.10:9200"]
   ipv4: true
   ipv6: true
   mode: any
   # ports: [80, 9200, 5044]
   #timeout: 16s
-    #check:
+  #check:
     #send: ''
     #receive: ''
   # proxy_url: ''
@@ -57,17 +47,16 @@ heartbeat.monitors:
   #watch.poll_file:
     #path:
     #interval: 5s
-    #keep_null: false
     
 - type: http
-  name: es-kib
+  name: es-ingest
   enabled: true
   schedule: '@every 5s'
-  urls: ["http://172.18.0.9:5601"]
+  urls: ["http://172.18.0.14:9200"]
   ipv4: true
   #ipv6: true
   mode: any
- 
+
 - type: http
   name: es-maseters
   enabled: true
@@ -75,6 +64,25 @@ heartbeat.monitors:
   urls: ["http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200"]
   ipv4: true
   #ipv6: true
+  mode: any
+
+
+- type: http
+  name: es-coordinate
+  enabled: true
+  schedule: '@every 5s'
+  urls: ["http://172.18.0.5:9200","http://172.18.0.6:9200"]
+  ipv4: true
+  ipv6: true
+  mode: any
+
+- type: http
+  name: es-kib
+  enabled: true
+  schedule: '@every 5s'
+  urls: ["http://172.18.0.9:9200"]
+  ipv4: true
+  ipv6: true
   mode: any
   #watch.poll_file:
     #path:
@@ -96,69 +104,141 @@ heartbeat.monitors:
     #body:
     #json:
     #- description: Explanation of what the check does
-      #  condition:
-      #    equals:
-      #      myField: expectedValue
+    #  condition:
+    #    equals:
+    #      myField: expectedValue
   #watch.poll_file:
     #path:
     #interval: 5s
-  #keep_null: false
 
-heartbeat.scheduler:
+#heartbeat.scheduler:
   #limit: 0
-  #location: '
+  #location: ''
 
-#==================== Elasticsearch template setting ==========================
-setup.template.settings:
-  index.number_of_shards: 6
-  index.codec: best_compression
-  #_source.enabled: false
-#============================== Template =====================================
-setup.template.enabled: true
-setup.template.name: "heartbeat-%{[agent.version]}"
-setup.template.pattern: "heartbeat-%{[agent.version]}-*"
-setup.template.fields: "${path.config}/fields.yml"
-#setup.template.append_fields:
-#- name: field_name
-#  type: field_type
-#setup.template.json.enabled: false
-#setup.template.json.path: "${path.config}/template.json"
-#setup.template.json.name: ""
-#setup.template.overwrite: false
-setup.template.settings:
-  index.number_of_shards: 6
-  index.codec: best_compression
-  #_source.enabled: false
-  #codec: best_compression
-  #number_of_routing_shards: 30
-
-#================================ General =====================================
+#================================ General ======================================
 name: LOG-MONITORING-SERVER
-tags: ["master01", "master02", "master03", "es-idx", "es-kib", "redis"]
+#tags: ["service-X", "web-tier"]
 #fields:
 #  env: staging
+#fields_under_root: false
+#queue:
+  #mem:
+    #events: 4096
+    #flush.min_events: 2048
+    #flush.timeout: 1s
+  #spool:
+    #file:
+      #path: "${path.data}/spool.dat"
+      #permissions: 0600
+      #size: 100MiB
+      #page_size: 4KiB
+      #prealloc: true
+    #write:
+      #buffer_size: 1MiB
+      #flush.timeout: 1s
+      #flush.events: 16384
+      #codec: cbor
+    #read:
+      #flush.timeout: 0s
+#max_procs:
 
-#============================== Kibana =====================================
-setup.kibana:
-  host: "172.18.0.9:5601"
-  protocol: "https"
-  #username: "elastic"
-  #password: "changeme"
-  path: "/kibana"
-  #ssl.enabled: true
-  #ssl.verification_mode: full
-  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
-  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
-  #ssl.certificate: "/etc/pki/client/cert.pem"
-  #ssl.key: "/etc/pki/client/cert.key"
-  #ssl.key_passphrase: ''
-  #ssl.cipher_suites: []
-  #ssl.curve_types: []
+#================================ Processors ===================================
+#processors:
+#- include_fields:
+#    fields: ["cpu"]
+#- drop_fields:
+#    fields: ["cpu.user", "cpu.system"]
+#processors:
+#- drop_event:
+#    when:
+#       equals:
+#           http.code: 200
+#processors:
+#- rename:
+#    fields:
+#       - from: "a"
+#         to: "b"
+#processors:
+#- dissect:
+#    tokenizer: "%{key1} - %{key2}"
+#    field: "message"
+#    target_prefix: "dissect"
+#processors:
+#- add_cloud_metadata: ~
+#processors:
+#- add_locale:
+#    format: offset
+#processors:
+#- add_docker_metadata:
+#    host: "unix:///var/run/docker.sock"
+#    match_fields: ["system.process.cgroup.id"]
+#    match_pids: ["process.pid", "process.ppid"]
+#    match_source: true
+#    match_source_index: 4
+#    match_short_id: false
+#    cleanup_timeout: 60
+#    labels.dedot: false
+#    #ssl:
+#    #  certificate_authority: "/etc/pki/root/ca.pem"
+#    #  certificate:           "/etc/pki/client/cert.pem"
+#    #  key:                   "/etc/pki/client/cert.key"
+#processors:
+#- add_docker_metadata: ~
+#processors:
+#- add_host_metadata:
+#   netinfo.enabled: false
+#processors:
+#- add_process_metadata:
+#    match_pids: ["system.process.ppid"]
+#    target: system.process.parent
+#processors:
+#- decode_json_fields:
+#    fields: ["field1", "field2", ...]
+#    process_array: false
+#    max_depth: 1
+#    target: ""
+#    overwrite_keys: false
+#processors:
+#- decompress_gzip_field:
+#    from: "field1"
+#    to: "field2"
+#    ignore_missing: false
+#    fail_on_error: true
+#processors:
+#- copy_fields:
+#    fields:
+#        - from: message
+#          to: message_copied
+#    fail_on_error: true
+#    ignore_missing: false
+#processors:
+#- truncate_fields:
+#    fields:
+#      - message
+#    max_bytes: 1024
+#    fail_on_error: false
+#    ignore_missing: true
+#processors:
+#- copy_fields:
+#    fields:
+#        - from: message
+#          to: event.original
+#    fail_on_error: false
+#    ignore_missing: true
+#- truncate_fields:
+#    fields:
+#      - event.original
+#    max_bytes: 1024
+#    fail_on_error: false
+#    ignore_missing: true
 
-#================================ Outputs =====================================
-#-------------------------- Elasticsearch output ------------------------------
-output.elasticsearch:
-  hosts: ["172.18.0.2:9200"]
+#================================ Outputs ======================================
+#-------------------------- Elasticsearch output -------------------------------
+#output.elasticsearch:
+  #enabled: true
+  #hosts: ["172.18.0.2:9200"]
+  #compression_level: 0
+  #escape_html: false
   #protocol: "https"
   #username: "elastic"
   #password: "changeme"
@@ -166,10 +246,11 @@ output.elasticsearch:
     #param1: value1
     #param2: value2
   #worker: 1
-  index: "heartbeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+  #index: "heartbeat-%{[agent.version]}-%{+yyyy.MM.dd}"
   #pipeline: ""
   #path: "/elasticsearch"
   #headers:
+  #  X-My-Header: Contents of the header
   #proxy_url: http://proxy:3128
   #proxy_disable: false
   #max_retries: 3
@@ -189,16 +270,16 @@ output.elasticsearch:
   #ssl.renegotiation: never
 
 #------------------------------- Redis output ----------------------------------
-#output.redis:
-  #enabled: true
+output.redis:
+  enabled: true
   #codec.json:
     #pretty: false
     #escape_html: false
-  #hosts: ["172.18.0.12:6379"]
-  #key: heartbeat
-  #password: Y&hZ&lgooHaW
-  #db: 2
-  #datatype: list
+  hosts: ["172.18.0.60:8579"]
+  key: heartbeat
+  password: Y&hZ&lgooHaW
+  db: 0
+  datatype: list
   #worker: 1
   #loadbalance: true
   #timeout: 5s
@@ -219,31 +300,121 @@ output.elasticsearch:
   #ssl.curve_types: []
   #ssl.renegotiation: never
 
-#================================ Processors =====================================
+#================================= Paths ======================================
+#path.home:
+#path.config: ${path.home}
+#path.data: ${path.home}/data
+#path.logs: ${path.home}/logs
 
-processors:
-  - add_observer_metadata:
-  #geo:
-    #name: us-east-1a
-    #location: "37.926868, -78.024902"
+#================================ Keystore ==========================================
+#keystore.path: "${path.config}/beats.keystore"
 
-#================================ Logging =====================================
+#============================== Dashboards =====================================
+#setup.dashboards.enabled: true
+#setup.dashboards.directory: ${path.home}/kibana
+#setup.dashboards.url:
+#setup.dashboards.file:
+#setup.dashboards.beat: heartbeat
+#setup.dashboards.kibana_index: .kibana
+#setup.dashboards.index:
+#setup.dashboards.always_kibana: false
+#setup.dashboards.retry.enabled: false
+#setup.dashboards.retry.interval: 1s
+#setup.dashboards.retry.maximum: 0
+
+#============================== Template =====================================
+#setup.template.enabled: true
+#setup.template.name: "heartbeat-%{[agent.version]}"
+#setup.template.pattern: "heartbeat-%{[agent.version]}-*"
+#setup.template.fields: "${path.config}/fields.yml"
+#setup.template.append_fields:
+#- name: field_name
+#  type: field_type
+#setup.template.json.enabled: false
+#setup.template.json.path: "${path.config}/template.json"
+#setup.template.json.name: ""
+#setup.template.overwrite: true
+#setup.template.settings:
+  #index:
+    #number_of_shards: 6
+    #codec: best_compression
+    #number_of_routing_shards: 30
+  #_source:
+    #enabled: false
+
+#============================== Kibana =====================================
+#setup.kibana:
+  #host: "172.18.0.9:5601"
+  #protocol: "https"
+  #username: "elastic"
+  #password: "changeme"
+  #path: "/kibana"
+  #ssl.enabled: true
+  #ssl.verification_mode: full
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
+
+#================================ Logging ======================================
 logging.level: info
-#logging.selectors: ["*"]
+#logging.selectors: [ ]
+#logging.to_stderr: false
+#logging.to_syslog: false
+#logging.to_eventlog: false
+#logging.metrics.enabled: true
+#logging.metrics.period: 30s
 logging.to_files: true
 logging.files:
   path: /usr/share/heartbeat/logs
   name: heartbeat
+  #rotateeverybytes: 10485760 # = 10MB
   keepfiles: 5
   permissions: 0644
   #interval: 0
-  #rotateonstartup: true
-  #logging.json: true
+  # rotateonstartup: true
+logging.json: true
+
+#============================== Xpack Monitoring ===============================
+#monitoring.enabled: false
+#monitoring.cluster_uuid:
+#monitoring.elasticsearch:
+  #hosts: ["localhost:9200"]
+  #compression_level: 0
+  #protocol: "https"
+  #username: "beats_system"
+  #password: "changeme"
+  #parameters:
+    #param1: value1
+    #param2: value2
+  #headers:
+  #  X-My-Header: Contents of the header
+  #proxy_url: http://proxy:3128
+  #max_retries: 3
+  #bulk_max_size: 50
+  #backoff.init: 1s
+  #backoff.max: 60s
+  #timeout: 90
+  #ssl.enabled: true
+  #ssl.verification_mode: full
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
+  #ssl.renegotiation: never
+  #metrics.period: 10s
+  #state.period: 1m
 
 #================================ HTTP Endpoint ======================================
 http.enabled: true
 http.host: localhost
 http.port: 5068
-##http.named_pipe.user:
-##http.named_pipe.security_descriptor:
-##monitoring.enabled: true
+
+#============================= Process Security ================================
+#seccomp.enabled: true

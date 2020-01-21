@@ -1,9 +1,112 @@
-http.host: "0.0.0.0"
-#http.port: 9600
-#monitoring.enabled: true
-xpack.monitoring.elasticsearch.hosts: [ "http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200" ]
-
-#pipeline.id: filebeat
-#ath.config: "/home/operation/app/elk-docker-compose/pipeline/filebeat.conf"
-#pipeline.id: metricbeat
-#path.config: "/home/operation/app/elk-docker-compose/pipeline/metricbeat.conf"
+#   pipeline:
+#     batch:
+#       size: 125
+#       delay: 5
+#   pipeline.batch.size: 125
+#   pipeline.batch.delay: 5
+#
+# ------------  Node identity ------------
+node.name: LOG-MONITORING-SERVER
+#
+# ------------ Data path ------------------
+# path.data:
+#
+# ------------ Pipeline Settings --------------
+#pipeline.id: main
+#pipeline.workers: 2
+#pipeline.batch.size: 125
+#pipeline.batch.delay: 50
+#pipeline.unsafe_shutdown: false
+#
+# ------------ Pipeline Configuration Settings --------------
+# path.config:
+# config.string:
+# config.test_and_exit: false
+# config.reload.automatic: false
+# config.reload.interval: 3s
+# config.debug: false
+# config.support_escapes: false
+#
+# ------------ Module Settings ---------------
+# modules:
+#   - name: MODULE_NAME
+#     var.PLUGINTYPE1.PLUGINNAME1.KEY1: VALUE
+#     var.PLUGINTYPE1.PLUGINNAME1.KEY2: VALUE
+#     var.PLUGINTYPE2.PLUGINNAME1.KEY1: VALUE
+#     var.PLUGINTYPE3.PLUGINNAME3.KEY1: VALUE
+#
+# modules:
+#
+# ------------ Cloud Settings ---------------
+# cloud.id: <identifier>
+# cloud.auth: elastic:<password>
+#
+# ------------ Queuing Settings --------------
+# queue.type: memory
+# path.queue:
+# queue.page_capacity: 64mb
+# queue.max_events: 0
+# queue.max_bytes: 1024mb
+# queue.checkpoint.acks: 1024
+# queue.checkpoint.writes: 1024
+# queue.checkpoint.interval: 1000
+#
+# ------------ Dead-Letter Queue Settings --------------
+# dead_letter_queue.enable: false
+# dead_letter_queue.max_bytes: 1024mb
+# path.dead_letter_queue:
+#
+# ------------ Metrics Settings --------------
+# http.host: "127.0.0.1"
+# http.port: 9600-9700
+#
+# ------------ Debugging Settings --------------
+# Options for log.level:
+#   * fatal
+#   * error
+#   * warn
+#   * info (default)
+#   * debug
+#   * trace
+#
+#log.level: info
+# path.logs:
+#
+# ------------ Other Settings --------------
+#
+# Where to find custom plugins
+# path.plugins: []
+#
+# ------------ X-Pack Settings (not applicable for OSS build)--------------
+#
+# X-Pack Monitoring
+# https://www.elastic.co/guide/en/logstash/current/monitoring-logstash.html
+#xpack.monitoring.enabled: false
+#xpack.monitoring.elasticsearch.username: logstash_system
+#xpack.monitoring.elasticsearch.password: password
+#xpack.monitoring.elasticsearch.hosts: ["https://es1:9200", "https://es2:9200"]
+#xpack.monitoring.elasticsearch.ssl.certificate_authority: [ "/path/to/ca.crt" ]
+#xpack.monitoring.elasticsearch.ssl.truststore.path: path/to/file
+#xpack.monitoring.elasticsearch.ssl.truststore.password: password
+#xpack.monitoring.elasticsearch.ssl.keystore.path: /path/to/file
+#xpack.monitoring.elasticsearch.ssl.keystore.password: password
+#xpack.monitoring.elasticsearch.ssl.verification_mode: certificate
+#xpack.monitoring.elasticsearch.sniffing: false
+#xpack.monitoring.collection.interval: 10s
+#xpack.monitoring.collection.pipeline.details.enabled: true
+#
+# X-Pack Management
+# https://www.elastic.co/guide/en/logstash/current/logstash-centralized-pipeline-management.html
+#xpack.management.enabled: false
+#xpack.management.pipeline.id: ["main", "apache_logs"]
+#xpack.management.elasticsearch.username: logstash_admin_user
+#xpack.management.elasticsearch.password: password
+#xpack.management.elasticsearch.hosts: ["https://es1:9200", "https://es2:9200"]
+#xpack.management.elasticsearch.ssl.certificate_authority: [ "/path/to/ca.crt" ]
+#xpack.management.elasticsearch.ssl.truststore.path: /path/to/file
+#xpack.management.elasticsearch.ssl.truststore.password: password
+#xpack.management.elasticsearch.ssl.keystore.path: /path/to/file
+#xpack.management.elasticsearch.ssl.keystore.password: password
+#xpack.management.elasticsearch.ssl.verification_mode: certificate
+#xpack.management.elasticsearch.sniffing: false
+#xpack.management.logstash.poll_interval: 5s

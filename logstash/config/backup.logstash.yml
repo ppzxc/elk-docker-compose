@@ -1,0 +1,12 @@
+http.host: "0.0.0.0"
+#http.port: 9600
+#monitoring.enabled: true
+xpack.monitoring.elasticsearch.hosts: [ "http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200" ]
+
+log.level: info
+#path.logs: /var/log/
+
+#pipeline.id: filebeat
+#ath.config: "/home/operation/app/elk-docker-compose/pipeline/filebeat.conf"
+#pipeline.id: metricbeat
+#path.config: "/home/operation/app/elk-docker-compose/pipeline/metricbeat.conf"

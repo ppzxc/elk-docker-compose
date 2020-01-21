@@ -1,0 +1,517 @@
+version: '2.2'
+services:
+  es-redis:
+    image: redis:5.0.7
+    container_name: es-redis
+    restart: always
+    sysctls:
+      - net.core.somaxconn=511
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/operation/data/redis/:/data
+      - /home/operation/app/elk-docker-compose/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.12
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.router-redis.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.router-redis.entrypoints=entrypoint-redis"
+      - "traefik.tcp.routers.router-redis.service=frontend-redis@docker"
+      - "traefik.tcp.services.frontend-redis.loadbalancer.server.port=6379"
+
+  es-grafana:
+    image: grafana/grafana:6.5.2
+    container_name: es-grafana
+    restart: always
+    environment:
+      - GF_SERVER_DOMAIN=monitor.nanoit.kr
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
+      - GF_SECURITY_ADMIN_USER=nanoit
+      - GF_SECURITY_ADMIN_PASSWORD=secret
+      - GF_METRICS_ENABLED=true
+        #- GF_METRICS_BASIC_AUTH_USERNAME=${USERNAME}
+        #- GF_METRICS_BASIC_AUTH_PASSWORD=${PASSWORD}
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+        #- GF_INSTALL_PLUGINS=${PLUGINS}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/operation/data/htpasswd/userfile:/userfile
+    depends_on:
+      - es-mt01
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.13
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=elastic-network"
+      #- "traefik.http.services.dashboard-grafana.loadbalancer.server.port=3000"
+      - "traefik.http.services.dashboard-secured-grafana.loadbalancer.server.port=3000"
+
+      #- "traefik.http.routers.router-grafana.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/grafana`) || PathPrefix(`/grafana/`))"
+      #- "traefik.http.routers.router-grafana.entrypoints=entrypoint-http"
+      #- "traefik.http.routers.router-grafana.middlewares=stripprefix-grafana@docker"
+      #- "traefik.http.middlewares.stripprefix-grafana.stripprefix.prefixes=/grafana"
+      #- "traefik.http.routers.router-grafana.service=dashboard-grafana@docker"
+      #- "traefik.http.routers.router-grafana.middlewares=redirect-to-https@docker"
+      #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=entrypoint-https"
+        
+      #- "traefik.http.routers.router-grafana.middlewares=redirect-to-https@docker"
+      #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=entrypoint-https"
+
+      #- "traefik.http.routers.secured-grafana.rule=Host(`monitor.nanoit.kr`) && PathPrefix(`/grafana`)"
+      - "traefik.http.routers.secured-grafana.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/grafana`) || PathPrefix(`/grafana/`))"
+      - "traefik.http.routers.secured-grafana.entrypoints=entrypoint-https"
+      - "traefik.http.routers.secured-grafana.service=dashboard-secured-grafana@docker"
+      - "traefik.http.routers.secured-grafana.tls=true"
+      - "traefik.http.routers.secured-grafana.tls.certresolver=nanoit-cert"
+      - "traefik.http.routers.secured-grafana.middlewares=stripprefix-grafana"
+      - "traefik.http.middlewares.stripprefix-grafana.stripprefix.prefixes=/grafana,/grafana/"
+      - "traefik.http.routers.secured-grafana.middlewares=basicauth@docker"
+      - "traefik.http.middlewares.basicauth.basicauth.usersfile=/userfile"
+
+        #- "traefik.http.routers.secured-grafana.rule=Host(`monitor.nanoit.kr`)"
+        #- "traefik.http.routers.secured-grafana.entrypoints=entrypoint-grafana"
+        #- "traefik.http.routers.secured-grafana.service=dashboard-grafana@docker"
+        #- "traefik.http.routers.secured-grafana.tls=true"
+        #- "traefik.http.routers.secured-grafana.tls.certresolver=nanoit-cert"
+        #- "traefik.http.routers.secured-grafana.middlewares=stripprefix-grafana"
+        #- "traefik.http.middlewares.stripprefix-grafana.stripprefix.prefixes=/grafana"
+        
+  es-mt01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    restart: always
+    container_name: es-mt01
+    environment:
+      - network.host=_site_
+      - node.name=es-mt01
+      - node.master=true
+      - node.data=false
+      - node.ingest=false
+      - cluster.remote.connect=false
+      - cluster.name=nanoit-log-cluster
+      - discovery.seed_hosts=es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
+      - bootstrap.memory_lock=true
+#      - xpack.security.transport.ssl.enabled=true
+#      - xpack.security.enabled=true
+      - xpack.monitoring.enabled=true
+      - xpack.monitoring.collection.enabled=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/operation/data/elasticsearch/master01/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/master01:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.2
+
+  es-mt02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    restart: always
+    container_name: es-mt02
+    environment:
+      - network.host=_site_
+      - node.name=es-mt02
+      - node.master=true
+      - node.data=false
+      - node.ingest=false
+      - cluster.remote.connect=false
+      - cluster.name=nanoit-log-cluster
+      - discovery.seed_hosts=es-mt01,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
+      - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
+      - xpack.monitoring.enabled=true
+      - xpack.monitoring.collection.enabled=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /home/operation/data/elasticsearch/master02/:/usr/share/elasticsearch/data
+      - /etc/localtime:/etc/localtime:ro
+      - /home/operation/data/logs/elasticsearch/master02:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.3
+
+  es-mt03:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    restart: always
+    container_name: es-mt03
+    environment:
+      - network.host=_site_
+      - node.name=es-mt03
+      - node.master=true
+      - node.data=false
+      - node.ingest=false
+      - cluster.remote.connect=false
+      - cluster.name=nanoit-log-cluster
+      - discovery.seed_hosts=es-mt01,es-mt02
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
+      - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
+      - xpack.monitoring.enabled=true
+      - xpack.monitoring.collection.enabled=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/operation/data/elasticsearch/master03/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/master03:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.4
+
+  es-cdn01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    restart: always
+    container_name: es-cdn01
+    environment:
+      - network.host=_site_
+      - node.name=es-cdn01
+      - node.master=false
+      - node.data=false
+      - node.ingest=false
+      - cluster.remote.connect=false
+      - cluster.name=nanoit-log-cluster
+      - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
+      - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
+      - xpack.monitoring.enabled=true
+      - xpack.monitoring.collection.enabled=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/operation/data/elasticsearch/coordinate01/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/coordinate01:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.5
+
+  es-cdn02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    restart: always
+    container_name: es-cdn02
+    environment:
+      - network.host=_site_
+      - node.name=es-cdn02
+      - node.master=false
+      - node.data=false
+      - node.ingest=false
+      - cluster.remote.connect=false
+      - cluster.name=nanoit-log-cluster
+      - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
+      - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
+      - xpack.monitoring.enabled=true
+      - xpack.monitoring.collection.enabled=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/operation/data/elasticsearch/coordinate02/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/coordinate02:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.6
+
+  es-data01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    restart: always
+    container_name: es-data01
+    environment:
+      - network.host=_site_
+      - node.name=es-data01
+      - node.master=false
+      - node.data=true
+      - node.ingest=false
+      - cluster.remote.connect=false
+      - cluster.name=nanoit-log-cluster
+      - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
+      - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
+      - xpack.monitoring.enabled=true
+      - xpack.monitoring.collection.enabled=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/operation/data/elasticsearch/data01/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/data01:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.7
+
+  es-data02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    restart: always
+    container_name: es-data02
+    environment:
+      - network.host=_site_
+      - node.name=es-data02
+      - node.master=false
+      - node.data=true
+      - node.ingest=false
+      - cluster.remote.connect=false
+      - cluster.name=nanoit-log-cluster
+      - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
+      - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
+      - xpack.monitoring.enabled=true
+      - xpack.monitoring.collection.enabled=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/operation/data/elasticsearch/data02/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/data02:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.8
+
+  es-data03:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    container_name: es-data03
+    restart: always
+    environment:
+      - network.host=_site_
+      - node.name=es-data03
+      - node.master=false
+      - node.data=true
+      - node.ingest=false
+      - cluster.remote.connect=false
+      - cluster.name=nanoit-log-cluster
+      - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
+      - bootstrap.memory_lock=true
+ #     - xpack.security.transport.ssl.enabled=true
+ #     - xpack.security.enabled=true
+      - xpack.monitoring.enabled=true
+      - xpack.monitoring.collection.enabled=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/operation/data/elasticsearch/data03/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/data03:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.15
+
+  es-ing01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    container_name: es-ing01
+    restart: always
+    environment:
+      - network.host=_site_
+      - node.name=es-ing01
+      - node.master=false
+      - node.data=false
+      - node.ingest=true
+      - cluster.remote.connect=false
+      - cluster.name=nanoit-log-cluster
+      - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
+      - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
+      - bootstrap.memory_lock=true
+      #- xpack.security.transport.ssl.enabled=true
+      #- xpack.security.enabled=true
+      - xpack.monitoring.enabled=true
+      - xpack.monitoring.collection.enabled=true
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/operation/data/elasticsearch/ingest01/:/usr/share/elasticsearch/data
+      - /home/operation/data/logs/elasticsearch/ingest01:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.14
+
+  es-kib:
+    image: docker.elastic.co/kibana/kibana:7.5.1
+    container_name: es-kib
+    restart: always
+    environment:
+      - server.name=es-kib
+      - server.host=_site_
+      - server.port=5601
+      - elasticsearch.hosts=_site_
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+      - /home/operation/data/logs/elasticsearch/kibana01:/usr/share/kibana/log
+      - /home/operation/data/htpasswd/userfile:/userfile
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.9
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03']
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=elastic-network"
+      - "traefik.http.services.dashboard-kibana.loadbalancer.server.port=5601"
+
+      - "traefik.http.routers.secured-kibana.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/kibana`) || PathPrefix(`/kibana/`))"
+      - "traefik.http.routers.secured-kibana.entrypoints=entrypoint-https"
+      - "traefik.http.routers.secured-kibana.service=dashboard-kibana@docker"
+      - "traefik.http.routers.secured-kibana.tls=true"
+      - "traefik.http.routers.secured-kibana.tls.certresolver=nanoit-cert"
+      - "traefik.http.routers.secured-kibana.middlewares=basicauth@docker"
+      - "traefik.http.middlewares.basicauth.basicauth.usersfile=/userfile"
+
+   
+  es-idx:
+    image: docker.elastic.co/logstash/logstash:7.5.1
+    container_name: es-idx
+    restart: always
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro
+      - ./logstash/config/log4j2.properties:/usr/share/logstash/config/log4j2.properties
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - /home/operation/data/elasticsearch/logstash-idx01:/usr/share/logstash/data
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      LS_JAVA_OPTS: "-Xmx1024m -Xms1024m"
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.10
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03', 'es-kib']
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.router-logstash.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.router-logstash.entrypoints=entrypoint-redis"
+      - "traefik.tcp.routers.router-logstash.service=frontend-redis@docker"
+      - "traefik.tcp.services.frontend-logstash.loadbalancer.server.port=5044"
+
+  es-mtb:
+    image: docker.elastic.co/beats/metricbeat:7.5.1
+    container_name: es-mtb
+    command: -e
+    user: root
+    restart: always
+    command: ["-e", "--strict.perms=false"]
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /proc:/hostfs/proc:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /:/hostfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/operation/data/logs/elasticsearch/metricbeat01:/usr/share/metricbeat/logs
+      - /home/operation/data/elasticsearch/metricbeat01/:/usr/share/metricbeat/data
+      - ./metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+    cap_add:
+      - sys_ptrace
+      - dac_read_search
+    environment:
+      - name=LOG-MONITOR-SERVER
+    network_mode: host
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
+
+  es-htb:
+    image: docker.elastic.co/beats/heartbeat:7.5.1
+    container_name: es-htb
+    command: ["-e", "--strict.perms=false"]
+    user: root
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./heartbeat/heartbeat.yml:/usr/share/heartbeat/heartbeat.yml:ro
+      - /home/operation/data/logs/elasticsearch/heartbeat01:/usr/share/heartbeat/logs
+      - /home/operation/data/elasticsearch/heartbeat01/:/usr/share/heartbeat/data
+    environment:
+      - name=LOG-MONITOR-SERVER
+    network_mode: host
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
+
+  es-ftb:
+    image: docker.elastic.co/beats/filebeat:7.5.1
+    container_name: es-ftb
+    command: -e
+    user: root
+    restart: always
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - /etc/localtime:/etc/localtime:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/operation/data/elasticsearch/filebeat01/:/usr/share/filebeat/data
+      - /home/operation/data/logs/elasticsearch:/usr/share/filebeat/logs/elasticsearch
+      - /home/operation/data/logs/filebeat01:/usr/share/filebeat/logs/filebeat01
+      - /home/operation/data/logs/traefik:/usr/share/filebeat/logs/traefik
+      - /home/operation/data/redis/redis.log:/usr/share/filebeat/logs/redis/redis.log
+      - /var/log:/usr/share/filebeat/logs/system
+    network_mode: host
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
+    command: ["--strict.perms=false"]
+
+  es-ptb:
+    image: docker.elastic.co/beats/packetbeat:7.5.1
+    container_name: es-ptb
+    command: ["--strict.perms=false"]
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /home/operation/app/elk-docker-compose/packetbeat/packetbeat.yml:/usr/share/packetbeat/packetbeat.yml
+      - /home/operation/data/elasticsearch/packetbeat01/:/usr/share/packetbeat/data
+      - /home/operation/data/logs/elasticsearch/packetbeat01:/usr/share/packetbeat/logs
+    network_mode: host
+    restart: always
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+
+networks:
+  elastic-network:
+    external: true

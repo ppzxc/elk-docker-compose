@@ -8,7 +8,7 @@ services:
       - net.core.somaxconn=511
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /home/operation/data/redis:/data
+      - /home/operation/data/redis/:/data
       - /home/operation/app/elk-docker-compose/redis/redis.conf:/usr/local/etc/redis/redis.conf
     networks:
       elastic-network:
@@ -20,28 +20,10 @@ services:
       - "traefik.tcp.routers.router-redis.entrypoints=entrypoint-redis"
       - "traefik.tcp.routers.router-redis.service=frontend-redis@docker"
       - "traefik.tcp.services.frontend-redis.loadbalancer.server.port=6379"
-
-  es-apm:
-    image: docker.elastic.co/apm/apm-server:7.3.2
-    restart: always
-    container_name: es-apm
-    user: apm-server
-    command: ["--strict.perms=false"]
-    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
-    environment:
-      ELASTICSEARCH_HOSTS: '["http://es-mt01:9200","https://es-mt02:9200","https://es-mt03:9200"]'
-    networks:
-      elastic-network:
-        ipv4_address: 172.18.0.30
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - ./apm-server/apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
         
   es-mt01:
     #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
-    build: ./elasticsearch
-    image: custom-elasticsearch
+    image: amazon/opendistro-for-elasticsearch:1.3.0
     restart: always
     container_name: es-mt01
     environment:
@@ -59,8 +41,8 @@ services:
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
       #- xpack.security.transport.ssl.enabled=true
       #- xpack.security.enabled=true
-      - xpack.monitoring.enabled=true
-      - xpack.monitoring.collection.enabled=true
+      #- xpack.monitoring.enabled=true
+      #- xpack.monitoring.collection.enabled=true
     ulimits:
       memlock:
         soft: -1
@@ -73,20 +55,20 @@ services:
       - /home/operation/data/elasticsearch/master01/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/master01:/usr/share/elasticsearch/logs
 
-      #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
-      #- ./ssl/master01.pem:/usr/share/elasticsearch/config/master01.pem
-      #- ./ssl/master01-key.pem:/usr/share/elasticsearch/config/master01-key.pem
-      #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
-      #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
+      - ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
+      - ./ssl/master01.pem:/usr/share/elasticsearch/config/master01.pem
+      - ./ssl/master01-key.pem:/usr/share/elasticsearch/config/master01-key.pem
+      - ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
+      - ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
 
-      #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
-      #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
-      #- ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
-      #- ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
-      #- ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
+      - ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+      - ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
+      - ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
+      - ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
+      - ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
 
     networks:
       elastic-network:
@@ -94,9 +76,7 @@ services:
 
   es-mt02:
     #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
-    build: ./elasticsearch
-    image: custom-elasticsearch
+    image: amazon/opendistro-for-elasticsearch:1.3.0
     restart: always
     container_name: es-mt02
     environment:
@@ -114,8 +94,8 @@ services:
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
       #- xpack.security.transport.ssl.enabled=true
       #- xpack.security.enabled=true
-      - xpack.monitoring.enabled=true
-      - xpack.monitoring.collection.enabled=true
+      #- xpack.monitoring.enabled=true
+      #- xpack.monitoring.collection.enabled=true
     ulimits:
       memlock:
         soft: -1
@@ -128,29 +108,27 @@ services:
       - /home/operation/data/elasticsearch/master02/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/master02:/usr/share/elasticsearch/logs
 
-      #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
-      #- ./ssl/master02.pem:/usr/share/elasticsearch/config/master02.pem
-      #- ./ssl/master02-key.pem:/usr/share/elasticsearch/config/master02-key.pem
-      #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
-      #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
+      - ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
+      - ./ssl/master02.pem:/usr/share/elasticsearch/config/master02.pem
+      - ./ssl/master02-key.pem:/usr/share/elasticsearch/config/master02-key.pem
+      - ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
+      - ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
 
-      #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
-      #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
-      #- ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
-      #- ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
-      #- ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
+      - ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+      - ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
+      - ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
+      - ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
+      - ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
     networks:
       elastic-network:
         ipv4_address: 172.18.0.3
 
   es-mt03:
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
+    image: amazon/opendistro-for-elasticsearch:1.3.0
     #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
-    build: ./elasticsearch
-    image: custom-elasticsearch
     restart: always
     container_name: es-mt03
     environment:
@@ -168,8 +146,8 @@ services:
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
       #- xpack.security.transport.ssl.enabled=true
       #- xpack.security.enabled=true
-      - xpack.monitoring.enabled=true
-      - xpack.monitoring.collection.enabled=true
+      #- xpack.monitoring.enabled=true
+      #- xpack.monitoring.collection.enabled=true
     ulimits:
       memlock:
         soft: -1
@@ -182,29 +160,27 @@ services:
       - /home/operation/data/elasticsearch/master03/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/master03:/usr/share/elasticsearch/logs
 
-      #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
-      #- ./ssl/master03.pem:/usr/share/elasticsearch/config/master03.pem
-      #- ./ssl/master03-key.pem:/usr/share/elasticsearch/config/master03-key.pem
-      #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
-      #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
+      - ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
+      - ./ssl/master03.pem:/usr/share/elasticsearch/config/master03.pem
+      - ./ssl/master03-key.pem:/usr/share/elasticsearch/config/master03-key.pem
+      - ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
+      - ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
 
-      #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
-      #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
-      #- ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
-      #- ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
-      #- ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
+      - ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+      - ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
+      - ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
+      - ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
+      - ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
     networks:
       elastic-network:
         ipv4_address: 172.18.0.4
 
   es-cdn01:
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
+    image: amazon/opendistro-for-elasticsearch:1.3.0
     #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
-    build: ./elasticsearch
-    image: custom-elasticsearch
     restart: always
     container_name: es-cdn01
     environment:
@@ -222,8 +198,8 @@ services:
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
       #- xpack.security.transport.ssl.enabled=true
       #- xpack.security.enabled=true
-      - xpack.monitoring.enabled=true
-      - xpack.monitoring.collection.enabled=true
+      #- xpack.monitoring.enabled=true
+      #- xpack.monitoring.collection.enabled=true
     ulimits:
       memlock:
         soft: -1
@@ -236,29 +212,27 @@ services:
       - /home/operation/data/elasticsearch/coordinate01/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/coordinate01:/usr/share/elasticsearch/logs
        
-      #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
-      #- ./ssl/cdn01.pem:/usr/share/elasticsearch/config/cdn01.pem
-      #- ./ssl/cdn01-key.pem:/usr/share/elasticsearch/config/cdn01-key.pem
-      #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
-      #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
+      - ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
+      - ./ssl/cdn01.pem:/usr/share/elasticsearch/config/cdn01.pem
+      - ./ssl/cdn01-key.pem:/usr/share/elasticsearch/config/cdn01-key.pem
+      - ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
+      - ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
 
-      #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
-      #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
-      #- ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
-      #- ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
-      #- ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
+      - ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+      - ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
+      - ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
+      - ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
+      - ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
     networks:
       elastic-network:
         ipv4_address: 172.18.0.5
 
   es-cdn02:
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
+    image: amazon/opendistro-for-elasticsearch:1.3.0
     #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
-    build: ./elasticsearch
-    image: custom-elasticsearch
     restart: always
     container_name: es-cdn02
     environment:
@@ -276,8 +250,8 @@ services:
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
       #- xpack.security.transport.ssl.enabled=true
       #- xpack.security.enabled=true
-      - xpack.monitoring.enabled=true
-      - xpack.monitoring.collection.enabled=true
+      #- xpack.monitoring.enabled=true
+      #- xpack.monitoring.collection.enabled=true
     ulimits:
       memlock:
         soft: -1
@@ -290,29 +264,27 @@ services:
       - /home/operation/data/elasticsearch/coordinate02/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/coordinate02:/usr/share/elasticsearch/logs
 
-      #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
-      #- ./ssl/cdn02.pem:/usr/share/elasticsearch/config/cdn02.pem
-      #- ./ssl/cdn02-key.pem:/usr/share/elasticsearch/config/cdn02-key.pem
-      #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
-      #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
+      - ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
+      - ./ssl/cdn02.pem:/usr/share/elasticsearch/config/cdn02.pem
+      - ./ssl/cdn02-key.pem:/usr/share/elasticsearch/config/cdn02-key.pem
+      - ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
+      - ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
 
-      #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
-      #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
-      #- ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
-      #- ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
-      #- ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
+      - ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+      - ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
+      - ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
+      - ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
+      - ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
     networks:
       elastic-network:
         ipv4_address: 172.18.0.6
 
   es-data01:
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
+    image: amazon/opendistro-for-elasticsearch:1.3.0
     #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
-    build: ./elasticsearch
-    image: custom-elasticsearch
     restart: always
     container_name: es-data01
     environment:
@@ -330,8 +302,8 @@ services:
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
       #- xpack.security.transport.ssl.enabled=true
       #- xpack.security.enabled=true
-      - xpack.monitoring.enabled=true
-      - xpack.monitoring.collection.enabled=true
+      #- xpack.monitoring.enabled=true
+      #- xpack.monitoring.collection.enabled=true
     ulimits:
       memlock:
         soft: -1
@@ -344,29 +316,27 @@ services:
       - /home/operation/data/elasticsearch/data01/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/data01:/usr/share/elasticsearch/logs
 
-      #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
-      #- ./ssl/data01.pem:/usr/share/elasticsearch/config/data01.pem
-      #- ./ssl/data01-key.pem:/usr/share/elasticsearch/config/data01-key.pem
-      #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
-      #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
+      - ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
+      - ./ssl/data01.pem:/usr/share/elasticsearch/config/data01.pem
+      - ./ssl/data01-key.pem:/usr/share/elasticsearch/config/data01-key.pem
+      - ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
+      - ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
 
-      #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
-      #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
-      #- ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
-      #- ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
-      #- ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
+      - ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+      - ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
+      - ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
+      - ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
+      - ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
     networks:
       elastic-network:
         ipv4_address: 172.18.0.7
 
   es-data02:
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
+    image: amazon/opendistro-for-elasticsearch:1.3.0
     #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
-    build: ./elasticsearch
-    image: custom-elasticsearch
     restart: always
     container_name: es-data02
     environment:
@@ -384,8 +354,8 @@ services:
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
       #- xpack.security.transport.ssl.enabled=true
       #- xpack.security.enabled=true
-      - xpack.monitoring.enabled=true
-      - xpack.monitoring.collection.enabled=true
+      #- xpack.monitoring.enabled=true
+      #- xpack.monitoring.collection.enabled=true
     ulimits:
       memlock:
         soft: -1
@@ -398,31 +368,29 @@ services:
       - /home/operation/data/elasticsearch/data02/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/data02:/usr/share/elasticsearch/logs
 
-      #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
-      #- ./ssl/data02.pem:/usr/share/elasticsearch/config/data02.pem
-      #- ./ssl/data02-key.pem:/usr/share/elasticsearch/config/data02-key.pem
-      #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
-      #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
+      - ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
+      - ./ssl/data02.pem:/usr/share/elasticsearch/config/data02.pem
+      - ./ssl/data02-key.pem:/usr/share/elasticsearch/config/data02-key.pem
+      - ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
+      - ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
 
-      #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
-      #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
-      #- ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
-      #- ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
-      #- ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
+      - ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+      - ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
+      - ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
+      - ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
+      - ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
     networks:
       elastic-network:
         ipv4_address: 172.18.0.8
 
   es-data03:
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
+    image: amazon/opendistro-for-elasticsearch:1.3.0
     #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
-    build: ./elasticsearch
-    image: custom-elasticsearch
-    restart: always
     container_name: es-data03
+    restart: always
     environment:
       - network.host=0.0.0.0
       #- network.host=_site_
@@ -438,8 +406,8 @@ services:
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
       #- xpack.security.transport.ssl.enabled=true
       #- xpack.security.enabled=true
-      - xpack.monitoring.enabled=true
-      - xpack.monitoring.collection.enabled=true
+      #- xpack.monitoring.enabled=true
+      #- xpack.monitoring.collection.enabled=true
     ulimits:
       memlock:
         soft: -1
@@ -452,29 +420,27 @@ services:
       - /home/operation/data/elasticsearch/data03/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/data03:/usr/share/elasticsearch/logs
 
-      #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
-      #- ./ssl/data03.pem:/usr/share/elasticsearch/config/data03.pem
-      #- ./ssl/data03-key.pem:/usr/share/elasticsearch/config/data03-key.pem
-      #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
-      #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
+      - ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
+      - ./ssl/data03.pem:/usr/share/elasticsearch/config/data03.pem
+      - ./ssl/data03-key.pem:/usr/share/elasticsearch/config/data03-key.pem
+      - ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
+      - ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
 
-      #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
-      #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
-      #- ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
-      #- ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
-      #- ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
+      - ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+      - ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
+      - ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
+      - ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
+      - ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
     networks:
       elastic-network:
         ipv4_address: 172.18.0.15
 
   es-ing01:
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
+    image: amazon/opendistro-for-elasticsearch:1.3.0
     #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
-    build: ./elasticsearch
-    image: custom-elasticsearch
     container_name: es-ing01
     restart: always
     environment:
@@ -492,8 +458,8 @@ services:
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       #- xpack.security.transport.ssl.enabled=true
       #- xpack.security.enabled=true
-      - xpack.monitoring.enabled=true
-      - xpack.monitoring.collection.enabled=true
+      #- xpack.monitoring.enabled=true
+      #- xpack.monitoring.collection.enabled=true
     ulimits:
       memlock:
         soft: -1
@@ -506,42 +472,39 @@ services:
       - /home/operation/data/elasticsearch/ingest01/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/ingest01:/usr/share/elasticsearch/logs
 
-      #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
-      #- ./ssl/ing01.pem:/usr/share/elasticsearch/config/ing01.pem
-      #- ./ssl/ing01-key.pem:/usr/share/elasticsearch/config/ing01-key.pem
-      #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
-      #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
+      - ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
+      - ./ssl/ing01.pem:/usr/share/elasticsearch/config/ing01.pem
+      - ./ssl/ing01-key.pem:/usr/share/elasticsearch/config/ing01-key.pem
+      - ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
+      - ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
 
-      #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
-      #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
-      #- ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
-      #- ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
-      #- ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
+      - ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+      - ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
+      - ./elasticsearch/tenants.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
+      - ./elasticsearch/roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
+      - ./elasticsearch/action_groups.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
     networks:
       elastic-network:
         ipv4_address: 172.18.0.14
 
   es-kib:
-    build: ./kibana
-    image: custom-kibana
-    #image: amazon/opendistro-for-elasticsearch-kibana:1.3.0
+    image: amazon/opendistro-for-elasticsearch-kibana:1.3.0
     #image: docker.elastic.co/kibana/kibana:7.3.2
     container_name: es-kib
     restart: always
     #user: root
+    ports:
+      - 5601:5601
     networks: 
       - elastic-network
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03']
     environment:
-      ELASTICSEARCH_HOSTS: '["http://es-mt01:9200","https://es-mt02:9200","https://es-mt03:9200"]'
-      #ELASTICSEARCH_URL: http://172.18.0.2:9200
-      #ELASTICSEARCH_HOSTS: http://172.18.0.2:9200
-      SERVER_BASEPATH: /kibana
-      SERVER_REWRITEBASEPATH: "true"
-      NODE_OPTIONS: "--max-old-space-size=2048"
+      #ELASTICSEARCH_HOSTS: '["https://172.18.0.2:9200","https://172.18.0.3:9200","https://172.18.0.4:9200"]'
+      ELASTICSEARCH_URL: http://172.18.0.2:9200
+      ELASTICSEARCH_HOSTS: https://172.18.0.2:9200
       #SERVER_SSL_ENABLED: "true"
       #SERVER_SSL_VERIFICATIONMODE: certificate
       #SERVER_SSL_KEY: /usr/share/kibana/config/kib01-key.pem
@@ -553,39 +516,40 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /home/operation/data/logs/elasticsearch/kibana01:/usr/share/kibana/log
-      - /home/operation/data/htpasswd/userfile:/userfile
+       #- /home/operation/data/htpasswd/userfile:/userfile
       #- ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
       #- ./ssl/rootca.pem:/usr/share/kibana/config/rootca.pem
       #- ./ssl/kib01.pem:/usr/share/kibana/config/kib01.pem
       #- ./ssl/kib01-key.pem:/usr/share/kibana/config/kib01-key.pem
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=elastic-network"
-      - "traefik.http.services.dashboard-kibana.loadbalancer.server.port=5601"
+    #labels:
+      #- "traefik.enable=true"
+      #- "traefik.docker.network=elastic-network"
+      #- "traefik.http.services.dashboard-kibana.loadbalancer.server.port=5601"
 
-      - "traefik.http.routers.secured-kibana.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/kibana`) || PathPrefix(`/kibana/`))"
-      #- "traefik.http.routers.router-cerebro.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/cerebro`) || PathPrefix(`/cerebro/`))"
-      - "traefik.http.routers.secured-kibana.entrypoints=entrypoint-https"
-      - "traefik.http.routers.secured-kibana.service=dashboard-kibana@docker"
-      - "traefik.http.routers.secured-kibana.tls=true"
-      - "traefik.http.routers.secured-kibana.tls.certresolver=nanoit-cert"
-      - "traefik.http.routers.secured-kibana.middlewares=basicauth@docker"
-      - "traefik.http.middlewares.basicauth.basicauth.usersfile=/userfile"
+      #- "traefik.http.routers.secured-kibana.rule=Host(`monitor.nanoit.kr`)"
+      #- "traefik.http.routers.secured-kibana.entrypoints=entrypoint-https"
+      #- "traefik.http.routers.secured-kibana.service=dashboard-kibana@docker"
+      #- "traefik.http.routers.secured-kibana.tls=true"
+      #- "traefik.http.routers.secured-kibana.tls.certresolver=nanoit-cert"
+      #- "traefik.http.routers.secured-kibana.middlewares=basicauth@docker"
+      #- "traefik.http.middlewares.basicauth.basicauth.usersfile=/userfile"
    
   es-idx:
     image: docker.elastic.co/logstash/logstash:7.3.2
     container_name: es-idx
+    restart: always
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /home/operation/data/elasticsearch/logstash-idx01:/usr/share/logstash/data
-      - /home/operation/data/logs/elasticsearch/logstash01:/usr/share/logstash/logs
       - ./logstash/config/:/usr/share/logstash/config/:ro
+      - /home/operation/data/elasticsearch/logstash-idx01:/usr/share/logstash/data
+      #- ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro
+      #- ./logstash/config/log4j2.properties:/usr/share/logstash/config/log4j2.properties
+      #- ./logstash/pipeline:/usr/share/logstash/pipeline:ro
     environment:
       LS_JAVA_OPTS: "-Xmx1024m -Xms1024m"
     networks:
       elastic-network:
         ipv4_address: 172.18.0.10
-    restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03', 'es-kib']
     labels:
       - "traefik.enable=true"
@@ -597,20 +561,22 @@ services:
   es-mtb:
     image: docker.elastic.co/beats/metricbeat:7.3.2
     container_name: es-mtb
-    command: ["--strict.perms=false"]
     user: root
+    restart: always
+    command: ["-e", "--strict.perms=false"]
+    network_mode: host
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
+    environment:
+      NAME: LOG-MONITOR-SERVER
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /etc/localtime:/etc/localtime:ro
       - /proc:/hostfs/proc:ro
       - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
       - /:/hostfs:ro
-      - /home/operation/data/logs/elasticsearch/metricbeat01:/usr/share/metricbeat/logs
+      - /home/operation/data/logs/elasticsearch/metricbeat01:/var/log/metricbeat
       - /home/operation/data/elasticsearch/metricbeat01/:/usr/share/metricbeat/data
       - /home/operation/app/elk-docker-compose/metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
-    network_mode: host
-    restart: always
-    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
     cap_add:
       - sys_ptrace
       - dac_read_search
@@ -618,37 +584,38 @@ services:
   es-htb:
     image: docker.elastic.co/beats/heartbeat:7.3.2
     container_name: es-htb
-    command: ["--strict.perms=false"]
+    command: ["-e", "--strict.perms=false"]
     user: root
+    restart: always
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./heartbeat/heartbeat.yml:/usr/share/heartbeat/heartbeat.yml:ro
       - /home/operation/data/logs/elasticsearch/heartbeat01:/usr/share/heartbeat/logs
       - /home/operation/data/elasticsearch/heartbeat01/:/usr/share/heartbeat/data
+    environment:
+      - name=LOG-MONITOR-SERVER
     network_mode: host
-    restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
 
   es-ftb:
     image: docker.elastic.co/beats/filebeat:7.3.2
     container_name: es-ftb
-    command: ["--strict.perms=false"]
+    command: ["-e", "--strict.perms=false"]
     user: root
+    restart: always
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
       - /etc/localtime:/etc/localtime:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
-
-      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /home/operation/data/elasticsearch/filebeat01/:/usr/share/filebeat/data
-
       - /home/operation/data/logs/elasticsearch:/usr/share/filebeat/logs/elasticsearch
+      - /home/operation/data/logs/filebeat01:/usr/share/filebeat/logs/filebeat01
       - /home/operation/data/logs/traefik:/usr/share/filebeat/logs/traefik
       - /home/operation/data/redis/redis.log:/usr/share/filebeat/logs/redis/redis.log
       - /var/log:/usr/share/filebeat/logs/system
     network_mode: host
-    restart: always
-    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03', 'es-redis']
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
 
   es-ptb:
     image: docker.elastic.co/beats/packetbeat:7.3.2
@@ -656,13 +623,11 @@ services:
     command: ["--strict.perms=false"]
     user: root
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-
+      - /etc/localtime:/etc/localtime:ro
+      - /home/operation/app/elk-docker-compose/packetbeat/packetbeat.yml:/usr/share/packetbeat/packetbeat.yml
       - /home/operation/data/elasticsearch/packetbeat01/:/usr/share/packetbeat/data
       - /home/operation/data/logs/elasticsearch/packetbeat01:/usr/share/packetbeat/logs
-
-      - ./packetbeat/packetbeat.yml:/usr/share/packetbeat/packetbeat.yml
     network_mode: host
     restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']

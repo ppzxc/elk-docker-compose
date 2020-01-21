@@ -1,5 +1,5 @@
 #============================== Network device ================================
-packetbeat.interfaces.device: any
+#packetbeat.interfaces.device: any
 #packetbeat.interfaces.type: pcap
 #packetbeat.interfaces.snaplen: 65535
 #packetbeat.interfaces.buffer_size_mb: 30
@@ -29,8 +29,8 @@ packetbeat.protocols:
   #ports: [53]
 
 - type: http
-  #ports: [80]
-  ports: [80, 3000, 9000, 9200, 9300, 9600, 8080]
+  ports: [80]
+  #ports: [80, 3000, 9000, 9200, 9300, 9600, 8080]
   #send_headers: false
   #send_all_headers: false
   #include_body_for: []
@@ -55,7 +55,7 @@ packetbeat.protocols:
   #ports: [5432]
 
 - type: redis
-  enabled: true
+  #enabled: true
   ports: [6379]
   #send_request: false
   #send_response: false
@@ -73,15 +73,15 @@ packetbeat.protocols:
 #- type: nfs
   #ports: [2049]
 
-- type: tls
-  ports:
-    - 443   # HTTPS
-    - 993   # IMAPS
-    - 995   # POP3S
-    - 5223  # XMPP over SSL
-    - 8443
-    - 8883  # Secure MQTT
-    - 9243  # Elasticsearch
+#- type: tls
+  #ports:
+    #- 443   # HTTPS
+    #- 993   # IMAPS
+    #- 995   # POP3S
+    #- 5223  # XMPP over SSL
+    #- 8443
+    #- 8883  # Secure MQTT
+    #- 9243  # Elasticsearch
 
   #fingerprints: [sha1]
   #send_certificates: true
@@ -115,7 +115,7 @@ packetbeat.protocols:
 #setup.template.json.name: ""
 #setup.template.overwrite: false
 #setup.template.settings:
-#index:
+  #index:
     #number_of_shards: 6
     #codec: best_compression
     #number_of_routing_shards: 30
@@ -123,7 +123,7 @@ packetbeat.protocols:
     #enabled: false
 
 #=========================== Monitored processes ==============================
-#packetbeat.procs.enabled: false
+##packetbeat.procs.enabled: false
 #packetbeat.ignore_outgoing: false
 
 #================================ General =====================================
@@ -132,14 +132,17 @@ name: LOG-MONITORING-SERVER
 #fields:
 #  env: staging
 
+#============================== Dashboards =====================================
+#setup.dashboards.enabled: true
+#setup.dashboards.url:
 #============================== Kibana =====================================
-#setup.kibana:
-  #host: "172.18.0.9:5601"
-  #protocol: "https"
+setup.kibana:
+  host: "172.18.0.9:5601"
+  protocol: "https"
   #username: "elastic"
   #password: "changeme"
-  #path: "/kibana"
-  #ssl.enabled: true
+  path: "/kibana"
+  ssl.enabled: true
   #ssl.verification_mode: full
   #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
   #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
@@ -151,9 +154,9 @@ name: LOG-MONITORING-SERVER
 
 #================================ Outputs =====================================
 #-------------------------- Elasticsearch output -------------------------------
-#output.elasticsearch:
-  #enabled: true
-  #hosts: ["172.18.0.2:9200"]
+output.elasticsearch:
+  enabled: true
+  hosts: ["172.18.0.2:9200"]
   #compression_level: 0
   #escape_html: false
   #protocol: "https"
@@ -163,7 +166,7 @@ name: LOG-MONITORING-SERVER
     #param1: value1
     #param2: value2
   #worker: 1
-  #index: "packetbeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+  index: "packetbeat-%{[agent.version]}-%{+yyyy.MM.dd}"
   #pipeline: ""
   #path: "/elasticsearch"
   #headers:
@@ -186,16 +189,16 @@ name: LOG-MONITORING-SERVER
   #ssl.renegotiation: never
 
 #------------------------------- Redis output ----------------------------------
-output.redis:
-  enabled: true
+#output.redis:
+  #enabled: true
   #codec.json:
     #pretty: false
   #escape_html: false
-  hosts: ["172.18.0.60:8579"]
-  key: packetbeat
-  password: Y&hZ&lgooHaW
-  db: 0
-  datatype: list
+  #hosts: ["172.18.0.12:6379"]
+  #key: packetbeat
+  #password: Y&hZ&lgooHaW
+  #db: 3
+  #datatype: list
   #worker: 1
   #loadbalance: true
   #timeout: 5s
@@ -217,10 +220,10 @@ output.redis:
   #ssl.renegotiation: never
 
 #================================ Processors =====================================
-processors:
-  - add_host_metadata: ~
-  - add_cloud_metadata: ~
-  - add_docker_metadata: ~
+#processors:
+  #- add_host_metadata: ~
+  #- add_cloud_metadata: ~
+  #- add_docker_metadata: ~
 
 #============================== Dashboards =====================================
 #setup.dashboards.enabled: true
@@ -236,15 +239,14 @@ processors:
 #setup.dashboards.retry.maximum: 0
 
 #================================ Logging =====================================
-logging.level: info
+logging.level: debug
 #logging.selectors: ["*"]
-logging.to_files: true
-logging.files:
-  path: /usr/share/packetbeat/logs
-  name: packetbeat
-  keepfiles: 5
-  permissions: 0644
-logging.json: true
+#logging.to_files: true
+#logging.files:
+  #path: /usr/share/packetbeat/logs
+  #name: packetbeat
+  #keepfiles: 5
+  #permissions: 0644
 
 #============================== X-Pack Monitoring ===============================
 #monitoring.enabled: false
@@ -252,6 +254,6 @@ logging.json: true
 #monitoring.elasticsearch:
 
 #================================ HTTP Endpoint ======================================
-http.enabled: true
-http.host: localhost
-http.port: 5069
+#http.enabled: true
+#http.host: localhost
+#http.port: 5069

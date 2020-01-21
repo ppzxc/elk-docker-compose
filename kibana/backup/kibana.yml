@@ -1,0 +1,62 @@
+# You may not use this file except in compliance with the License.
+# A copy of the License is located at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# or in the "license" file accompanying this file. This file is distributed
+# on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+# express or implied. See the License for the specific language governing
+# permissions and limitations under the License.
+
+# Description:
+# Default Kibana configuration from kibana-docker.
+
+server.name: kibana
+server.host: "0"
+elasticsearch.hosts: https://localhost:9200
+elasticsearch.ssl.verificationMode: full
+elasticsearch.username: kibanaserver
+elasticsearch.password: kibanaserver
+elasticsearch.requestHeadersWhitelist: ["securitytenant","Authorization"]
+
+opendistro_security.multitenancy.enabled: true
+opendistro_security.multitenancy.tenants.preferred: ["Private", "Global"]
+opendistro_security.readonly_mode.roles: ["kibana_read_only"]
+
+#############################################################################################
+
+#server.port: 5601
+#server.host: "0"
+#server.basePath: "/kibana"
+#server.rewriteBasePath: true
+#server.maxPayloadBytes: 1048576
+#server.name: kibana
+#elasticsearch.hosts: [ "http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200", "http://172.18.0.5:9200", "http://172.18.0.6:9200", "http://172.18.0.7:9200", "http://172.18.0.8:9200", "http://172.18.0.14:9200"]
+#elasticsearch.hosts: "http://elasticsearch:9200"
+#elasticsearch.preserveHost: true
+#kibana.index: ".kibana"
+#kibana.defaultAppId: "home"
+#elasticsearch.username: "kibana"
+#elasticsearch.password: "pass"
+#server.ssl.enabled: false
+#server.ssl.certificate: /path/to/your/server.crt
+#server.ssl.key: /path/to/your/server.key
+#elasticsearch.ssl.certificate: /path/to/your/client.crt
+#elasticsearch.ssl.key: /path/to/your/client.key
+#elasticsearch.ssl.certificateAuthorities: [ "/path/to/your/CA.pem" ]
+#elasticsearch.ssl.verificationMode: full
+#elasticsearch.pingTimeout: 1500
+#elasticsearch.requestTimeout: 30000
+#elasticsearch.requestHeadersWhitelist: [ authorization ]
+#elasticsearch.customHeaders: {}
+#elasticsearch.shardTimeout: 30000
+#elasticsearch.startupTimeout: 5000
+#elasticsearch.logQueries: false
+#pid.file: /var/run/kibana.pid
+#logging.dest: /usr/share/kibana/log
+#logging.json: true
+#logging.silent: true
+#logging.quiet: false
+#logging.verbose: true
+#ops.interval: 5000
+#i18n.locale: "en"

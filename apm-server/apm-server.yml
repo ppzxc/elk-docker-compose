@@ -1,0 +1,349 @@
+######################### APM Server Configuration #########################
+
+################################ APM Server ################################
+
+apm-server:
+  host: "localhost:8200"
+  #max_header_size: 1048576
+  #idle_timeout: 45s
+  #read_timeout: 30s
+  #write_timeout: 30s
+  #shutdown_timeout: 5s
+  #max_event_size: 307200
+  #max_connections: 0
+  #capture_personal_data: true
+  #expvar:
+    #enabled: false
+    #url: "/debug/vars"
+  #instrumentation:
+    #enabled: false
+    #environment: ""
+    #hosts:
+    #  - http://remote-apm-server:8200
+    #secret_token:
+
+  #register.ingest.pipeline:
+    #enabled: true
+    #overwrite: false
+
+
+  #---------------------------- APM Server - Secure Communication with Agents ----------------------------
+  #secret_token:
+  #ssl:
+    #enabled: false
+    #certificate_authorities: []
+    #certificate: ''
+    #key: ''
+    #key_passphrase: ''
+    #supported_protocols: [TLSv1.1, TLSv1.2]
+    #cipher_suites: []
+    #curve_types: []
+    #client_authentication: "optional"
+    #ssl.verification_mode: full
+
+  #---------------------------- APM Server - RUM Real User Monitoring ----------------------------
+  #rum:
+    #enabled: false
+    #event_rate:
+      #limit: 300
+      #lru_size: 1000
+
+    #-- General RUM settings
+    #allow_origins : ['*']
+    #library_pattern: "node_modules|bower_components|~"
+    #exclude_from_grouping: "^/webpack"
+    #source_mapping:
+      #enabled: true
+      #elasticsearch:
+        #hosts: ["localhost:9200"]
+        #protocol: "https"
+        #username: "elastic"
+        #password: "changeme"
+      #cache:
+        #expiration: 5m
+      #index_pattern: "apm-*-sourcemap*"
+
+  #---------------------------- APM Server - Agent Configuration ----------------------------
+  #agent.config.cache.expiration: 30s
+  #kibana:
+    #enabled: false
+    #host: "localhost:5601"
+    #protocol: "https"
+    #username: "elastic"
+    #password: "changeme"
+    #path: ""
+    #ssl.enabled: true
+    #ssl.verification_mode: full
+    #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+    #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+    #ssl.certificate: "/etc/pki/client/cert.pem"
+    #ssl.key: "/etc/pki/client/cert.key"
+    #ssl.key_passphrase: ''
+    #ssl.cipher_suites: []
+    #ssl.curve_types: []
+
+  #---------------------------- APM Server - ILM Index Lifecycle Management ----------------------------
+  #ilm:
+    #enabled: "auto"
+    #setup:
+      #enabled: true
+      #overwrite: false
+      #require_policy: true
+      #mapping:
+        #- event_type: "error"
+        #  policy_name: "apm-rollover-30-days"
+        #- event_type: "span"
+        #  policy_name: "apm-rollover-30-days"
+        #- event_type: "transaction"
+        #  policy_name: "apm-rollover-30-days"
+        #- event_type: "metric"
+        #  policy_name: "apm-rollover-30-days"
+
+      #policies:
+        #- name: "apm-rollover-30-days"
+          #policy:
+            #phases:
+              #hot:
+                #actions:
+                  #rollover:
+                    #max_size: "50gb"
+                    #max_age: "30d"
+                  #set_priority:
+                    #priority: 100
+              #warm:
+                #min_age: "30d"
+                #actions:
+                  #set_priority:
+                    #priority: 50
+                  #readonly: {}
+
+
+#================================= General =================================
+#queue:
+  #mem:
+    #events: 4096
+    #flush.min_events: 2048
+    #flush.timeout: 1s
+
+#max_procs:
+
+#================================= Template =================================
+#setup.template.enabled: true
+#setup.template.name: "apm-%{[observer.version]}"
+#setup.template.pattern: "apm-%{[observer.version]}-*"
+#setup.template.fields: "${path.config}/fields.yml"
+#setup.template.overwrite: false
+#setup.template.settings:
+  #index:
+    #number_of_shards: 1
+    #codec: best_compression
+    #number_of_routing_shards: 30
+    #mapping.total_fields.limit: 2000
+
+#============================= Elastic Cloud =============================
+#cloud.id:
+#cloud.auth:
+
+#================================ Outputs =================================
+#-------------------------- Elasticsearch output --------------------------
+output.elasticsearch:
+  hosts: ["172.18.0.2:9200","172.18.0.3:9200","172.18.0.4:9200"]
+  #enabled: true
+  #compression_level: 0
+  #protocol: "https"
+  #username: "elastic"
+  #password: "changeme"
+  #parameters:
+    #param1: value1
+    #param2: value2
+ #worker: 1
+  # - error
+  # - transaction
+  # - span
+  # - sourcemap
+  #index: "apm-%{[observer.version]}-%{+yyyy.MM.dd}"
+  #indices:
+  #  - index: "apm-%{[observer.version]}-sourcemap"
+  #    when.contains:
+  #      processor.event: "sourcemap"
+  #
+  #  - index: "apm-%{[observer.version]}-error-%{+yyyy.MM.dd}"
+  #    when.contains:
+  #      processor.event: "error"
+  #
+  #  - index: "apm-%{[observer.version]}-transaction-%{+yyyy.MM.dd}"
+  #    when.contains:
+  #      processor.event: "transaction"
+  #
+  #  - index: "apm-%{[observer.version]}-span-%{+yyyy.MM.dd}"
+  #    when.contains:
+  #      processor.event: "span"
+  #
+  #  - index: "apm-%{[observer.version]}-metric-%{+yyyy.MM.dd}"
+  #    when.contains:
+  #      processor.event: "metric"
+  #
+  #  - index: "apm-%{[observer.version]}-onboarding-%{+yyyy.MM.dd}"
+  #    when.contains:
+  #      processor.event: "onboarding"
+  #pipeline: "apm"
+  #path: "/elasticsearch"
+  #headers:
+  #proxy_url: http://proxy:3128
+  #max_retries: 3
+  #bulk_max_size: 50
+  #backoff.init: 1s
+  #backoff.max: 60s
+  #timeout: 90
+  #ssl.enabled: true
+  #ssl.verification_mode: full
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
+  #ssl.renegotiation: never
+
+#----------------------------- Console output -----------------------------
+#output.console:
+  #enabled: false
+  #codec.json:
+    #pretty: false
+    #escape_html: false
+
+#---------------------------- Logstash output -----------------------------
+#output.logstash:
+  #enabled: false
+  #hosts: ["localhost:5044"]
+  #worker: 1
+  #compression_level: 3
+  #escape_html: true
+  #ttl: 30s
+  #loadbalance: false
+  #pipelining: 2
+  #slow_start: false
+  #backoff.init: 1s
+  #backoff.max: 60s
+  #index: 'apm'
+  #proxy_url: socks5://user:password@socks5-server:2233
+  #proxy_use_local_resolver: false
+  #ssl.enabled: false
+  #ssl.verification_mode: full
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
+  #ssl.renegotiation: never
+
+#------------------------------ Kafka output ------------------------------
+#output.kafka:
+  #enabled: false
+  #hosts: ["localhost:9092"]
+  #topic: beats
+  #key: ''
+  #partition.hash:
+    #reachable_only: false
+    #hash: []
+  #username: ''
+  #password: ''
+  #version: '1.0.0'
+  #codec.json:
+    #pretty: false
+    #escape_html: true
+
+  #metadata:
+    #retry.max: 3
+    #retry.backoff: 250ms
+    #refresh_frequency: 10m
+  #worker: 1
+  #max_retries: 3
+  #bulk_max_size: 2048
+  #timeout: 30s
+  #broker_timeout: 10s
+  #channel_buffer_size: 256
+  #keep_alive: 0
+  #compression: gzip
+  #compression_level: 4
+  #max_message_bytes: 1000000
+
+  #required_acks: 1
+  #client_id: beats
+  #ssl.enabled: false
+  #ssl.verification_mode: full
+
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
+  #ssl.renegotiation: never
+
+#================================= Paths ==================================
+#path.home:
+#path.config: ${path.home}
+#path.data: ${path.home}/data
+#path.logs: ${path.home}/logs
+
+#================================= Logging =================================
+#logging.level: info
+#logging.selectors: [ ]
+#logging.to_syslog: true
+#logging.metrics.enabled: false
+#logging.metrics.period: 30s
+#logging.to_files: true
+#logging.files:
+  #path: /var/log/apm-server
+  #name: apm-server
+  #rotateeverybytes: 10485760 # = 10MB
+  #keepfiles: 7
+  #permissions: 0600
+  #interval: 0
+#logging.json: false
+
+#=============================== HTTP Endpoint ===============================
+#http.enabled: false
+#http.host: localhost
+#http.port: 5066
+
+#============================= X-pack Monitoring =============================
+#monitoring.enabled: false
+#monitoring.elasticsearch:
+  #protocol: "https"
+  #username: "apm_system"
+  #password: ""
+  #hosts: ["localhost:9200"]
+  #compression_level: 0
+  #parameters:
+    #param1: value1
+    #param2: value2
+
+  #headers:
+  #proxy_url: http://proxy:3128
+
+  #max_retries: 3
+  #bulk_max_size: 50
+  #backoff.init: 1s
+  #backoff.max: 60s
+
+  #timeout: 90
+  #ssl.enabled: true
+  #ssl.verification_mode: full
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
+  #ssl.renegotiation: never
+
+  #metrics.period: 10s
+  #state.period: 1m
+

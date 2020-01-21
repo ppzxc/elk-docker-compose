@@ -1,10 +1,10 @@
 #server.port: 5601
-server.host: "0"
-server.basePath: "/kibana"
-server.rewriteBasePath: true
+#server.host: "localhost"
+#server.basePath: ""
+#server.rewriteBasePath: false
 #server.maxPayloadBytes: 1048576
-server.name: kibana
-elasticsearch.hosts: [ "http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200", "http://172.18.0.5:9200", "http://172.18.0.6:9200", "http://172.18.0.7:9200", "http://172.18.0.8:9200", "http://172.18.0.14:9200"]
+#server.name: "your-hostname"
+#elasticsearch.hosts: ["http://localhost:9200"]
 #elasticsearch.preserveHost: true
 #kibana.index: ".kibana"
 #kibana.defaultAppId: "home"
@@ -25,8 +25,7 @@ elasticsearch.hosts: [ "http://172.18.0.2:9200", "http://172.18.0.3:9200", "http
 #elasticsearch.startupTimeout: 5000
 #elasticsearch.logQueries: false
 #pid.file: /var/run/kibana.pid
-logging.dest: ./logs
-#logging.json: true
+#logging.dest: stdout
 #logging.silent: false
 #logging.quiet: false
 #logging.verbose: false

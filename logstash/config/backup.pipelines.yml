@@ -1,0 +1,45 @@
+#- pipeline.id: test
+#  pipeline.workers: 1
+#  pipeline.batch.size: 1
+#  config.string: "input { generator {} } filter { sleep { time => 1 } } output { stdout { codec => dots } }"
+
+- pipeline.id: filebeat
+  pipeline.workers: 1
+  pipeline.batch.size: 125
+  path.config: "/usr/share/logstash/pipeline/filebeat.conf"
+  #queue.type: persisted
+
+- pipeline.id: metricbeat
+  pipeline.workers: 1
+  pipeline.batch.size: 125
+  path.config: "/usr/share/logstash/pipeline/metricbeat.conf"
+  #queue.type: persisted
+
+- pipeline.id: heartbeat
+  pipeline.workers: 1
+  pipeline.batch.size: 125
+  path.config: "/usr/share/logstash/pipeline/heartbeat.conf"
+  #queue.type: persisted
+  
+  #- pipeline.id: packetbeat
+  #pipeline.workers: 1
+  #pipeline.batch.size: 125
+  #path.config: "/usr/share/logstash/pipeline/packetbeat.conf"
+  #queue.type: persisted
+
+  #pipeline.id: mylogs
+  #config.string: "input { generator {} } filter { sleep { time => 1 } } output { stdout { codec => dots } }"
+  #path.config: "/etc/conf.d/logstash/myconfig.cfg"
+  #pipeline.workers: 1 (actually defaults to number of CPUs)
+  #pipeline.batch.size: 125
+  #pipeline.batch.delay: 50
+  #queue.type: memory
+  #queue.page_capacity: 64mb
+  #queue.max_events: 0
+  #queue.max_bytes: 1024mb
+  #queue.checkpoint.acks: 1024
+  #queue.checkpoint.writes: 1024
+  #queue.checkpoint.interval: 1000
+  #dead_letter_queue.enable: false
+  #dead_letter_queue.max_bytes: 1024mb
+  #path.dead_letter_queue:

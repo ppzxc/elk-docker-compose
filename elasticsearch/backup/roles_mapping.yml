@@ -1,0 +1,64 @@
+# Role mapping configuration file which has elasticsearch roles as keys
+# that map to one or more user or group distinguished names
+
+#roleA:   this is an elasticsearch role
+#  - groupA-DN  this is a group distinguished name
+#  - groupB-DN
+#  - user1-DN   this is the full user distinguished name
+
+#power_user:
+#  - "cn=admins,dc=example,dc=com"
+#user:
+#  - "cn=users,dc=example,dc=com"
+#  - "cn=admins,dc=example,dc=com"
+#  - "cn=John Doe,cn=other users,dc=example,dc=com"
+
+---
+# In this file users, backendroles and hosts can be mapped to Open Distro Security roles.
+# Permissions for Opendistro roles are configured in roles.yml
+
+_meta:
+  type: "rolesmapping"
+  config_version: 2
+
+# Define your roles mapping here
+
+## Demo roles mapping
+
+all_access:
+  reserved: false
+  backend_roles:
+  - "admin"
+  description: "Maps admin to all_access"
+
+own_index:
+  reserved: false
+  users:
+  - "*"
+  description: "Allow full access to an index named like the username"
+
+logstash:
+  reserved: false
+  backend_roles:
+  - "logstash"
+
+kibana_user:
+  reserved: false
+  backend_roles:
+  - "kibanauser"
+  description: "Maps kibanauser to kibana_user"
+
+readall:
+  reserved: false
+  backend_roles:
+  - "readall"
+
+manage_snapshots:
+  reserved: false
+  backend_roles:
+  - "snapshotrestore"
+
+kibana_server:
+  reserved: true
+  users:
+  - "kibanaserver"

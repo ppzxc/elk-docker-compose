@@ -1,0 +1,37 @@
+version: '2.2'
+  es-grafana:
+    image: grafana/grafana:6.5.2
+    container_name: es-grafana
+    restart: always
+    environment:
+      - GF_SERVER_DOMAIN=monitor.nanoit.kr
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
+      - GF_SECURITY_ADMIN_USER=nanoit
+      - GF_SECURITY_ADMIN_PASSWORD=secret
+      - GF_METRICS_ENABLED=true
+      #- GF_METRICS_BASIC_AUTH_USERNAME=${USERNAME}
+      #- GF_METRICS_BASIC_AUTH_PASSWORD=${PASSWORD}
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      #- GF_INSTALL_PLUGINS=${PLUGINS}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/operation/data/htpasswd/userfile:/userfile
+    depends_on:
+      - es-mt01
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.13
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=elastic-network"
+      - "traefik.http.services.dashboard-secured-grafana.loadbalancer.server.port=3000"
+      - "traefik.http.routers.secured-grafana.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/grafana`) || PathPrefix(`/grafana/`))"
+      - "traefik.http.routers.secured-grafana.entrypoints=entrypoint-https"
+      - "traefik.http.routers.secured-grafana.service=dashboard-secured-grafana@docker"
+      - "traefik.http.routers.secured-grafana.tls=true"
+      - "traefik.http.routers.secured-grafana.tls.certresolver=nanoit-cert"
+      - "traefik.http.routers.secured-grafana.middlewares=stripprefix-grafana"
+      - "traefik.http.middlewares.stripprefix-grafana.stripprefix.prefixes=/grafana,/grafana/"
+      - "traefik.http.routers.secured-grafana.middlewares=basicauth@docker"
+      - "traefik.http.middlewares.basicauth.basicauth.usersfile=/userfile"

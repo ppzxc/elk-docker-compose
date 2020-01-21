@@ -27,6 +27,13 @@ filebeat.modules:
     var.hosts: ["172.18.0.12:6379"]
     var.password: Y&hZ&lgooHaW
 
+#------------------------------- Iptables Module -------------------------------
+#- module: iptables
+  #log:
+    #enabled: true
+    #var.input:
+    #var.paths:
+
 #---------------------------- Elasticsearch Module ----------------------------
 - module: elasticsearch
   server:
@@ -134,8 +141,8 @@ filebeat.config.modules:
     
 #==================== Elasticsearch template setting ==========================
 #setup.template.enabled: true
-#setup.template.name: "host-%{[agent.version]}"
-#setup.template.pattern: "host-%{[agent.version]}-*"
+#setup.template.name: "filebeat-%{[agent.version]}"
+#setup.template.pattern: "filebeat-%{[agent.version]}-*"
 #setup.template.fields: "${path.config}/fields.yml"
 #setup.template.append_fields:
 #- name: field_name
@@ -146,7 +153,7 @@ filebeat.config.modules:
 #setup.template.overwrite: false
 
 setup.template.settings:
-  index.number_of_shards: 3
+  index.number_of_shards: 6
   index.codec: best_compression
   #_source.enabled: false
     
@@ -157,29 +164,31 @@ tags: ["traefik", "elasticsearch", "auth", "redis", "cron", "messages"]
 #  env: staging
     
 #============================== Dashboards =====================================
-#setup.dashboards.enabled: false
+#setup.dashboards.enabled: true
 #setup.dashboards.url:
     
 #============================== Kibana =====================================
 #setup.kibana:
-#  host: "172.18.0.9:5601"
+  #host: "172.18.0.9:5601/kibana"
   #space.id:
     
 #================================ Outputs =====================================
 #output.elasticsearch:
-#  enabled: true
-#  hosts: ["172.18.0.2:9200"]
-#  index: "host-%{[agent.version]}-%{+yyyy.MM.dd}"
+  #enabled: true
+  #hosts: ["172.18.0.2:9200"]
+  #index: "host-%{[agent.version]}-%{+yyyy.MM.dd}"
+  #index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+
 #------------------------------- Redis output ----------------------------------
 output.redis:
   enabled: true
 #  codec.json:
 #    pretty: true
 #    escape_html: false
-  hosts: ["172.18.0.12:6379"]
+  hosts: ["172.18.0.60:8579"]
   key: filebeat
   password: Y&hZ&lgooHaW
-  db: 1
+  db: 0
   datatype: list
   #worker: 1
   #loadbalance: true
@@ -209,30 +218,27 @@ output.redis:
     
 processors:
   - add_host_metadata: ~
-  - add_cloud_metadata: ~
+  #- add_cloud_metadata: ~
   - add_docker_metadata: ~
-  - add_kubernetes_metadata: ~
+  #- add_kubernetes_metadata: ~
     
 #================================ Logging =====================================
-http.enabled: true
-http.port: 5067
-
-logging.level: warning
+logging.level: info
 #logging.selectors: ["*"]
 logging.to_files: true
 logging.files:
-  path: /usr/share/filebeat/logs/filebeat01
+  path: /usr/share/filebeat/logs/elasticsearch/filebeat01
   name: filebeat
   keepfiles: 5
   permissions: 0644
   #interval: 0
   #rotateonstartup: true
-  #logging.json: true
+logging.json: true
 
 #================================ HTTP Endpoint ======================================
 http.enabled: true
 http.host: localhost
-http.port: 5067
+http.port: 5066
 #http.named_pipe.user:
 #http.named_pipe.security_descriptor:
 #monitoring.enabled: true
