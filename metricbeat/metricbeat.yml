@@ -112,7 +112,7 @@ metricbeat.modules:
   hosts: ["unix:///var/run/docker.sock"]
   period: 10s
   enabled: true
-  #labels.dedot: false
+  labels.dedot: true
   #cpu.cores: true
   #ssl:
     #certificate_authority: "/etc/pki/root/ca.pem"
@@ -245,10 +245,10 @@ metricbeat.modules:
   password: Y&hZ&lgooHaW
 
 #------------------------------- Traefik Module -------------------------------
-- module: traefik
-  metricsets: ["health"]
-  period: 10s
-  hosts: ["172.18.0.60:8578"]
+#- module: traefik
+  #metricsets: ["health"]
+  #period: 10s
+  #hosts: ["172.18.0.60:8578"]
 
 #================================ General ======================================
 name: LOG-MONITORING-SERVER
@@ -305,13 +305,13 @@ processors:
 #processors:
 #- add_locale:
 #    format: offset
-#processors:
-#- add_docker_metadata:
-#    host: "unix:///var/run/docker.sock"
-#    match_fields: ["system.process.cgroup.id"]
-#    match_pids: ["process.pid", "process.ppid"]
-#    match_source: true
-#    match_source_index: 4
+processors:
+- add_docker_metadata:
+    host: "unix:///var/run/docker.sock"
+    match_fields: ["system.process.cgroup.id"]
+    match_pids: ["process.pid", "process.ppid"]
+    match_source: true
+    match_source_index: 4
 #    match_short_id: false
 #    cleanup_timeout: 60
 #    labels.dedot: false
@@ -324,10 +324,10 @@ processors:
 #processors:
 #- add_host_metadata:
 #   netinfo.enabled: false
-#processors:
-#- add_process_metadata:
-#    match_pids: ["system.process.ppid"]
-#    target: system.process.parent
+processors:
+- add_process_metadata:
+    match_pids: ["system.process.ppid"]
+    target: system.process.parent
 #processors:
 #- decode_json_fields:
 #    fields: ["field1", "field2", ...]
@@ -371,9 +371,10 @@ processors:
 
 #================================ Outputs ======================================
 #-------------------------- Elasticsearch output -------------------------------
-#output.elasticsearch:
+output.elasticsearch:
   #enabled: true
-  #hosts: ["172.18.0.2:9200"]
+  hosts: ["172.18.0.2:9200"]
+  #hosts: '["http://172.18.0.2:9200","http://172.18.0.3:9200","http://172.18.0.4:9200"]'
   #compression_level: 0
   #escape_html: false
   #protocol: "https"
@@ -407,16 +408,16 @@ processors:
   #ssl.renegotiation: never
 
 #------------------------------- Redis output ----------------------------------
-output.redis:
-  enabled: true
+#output.redis:
+  #enabled: true
   #codec.json:
     #pretty: false
     #escape_html: false
-  hosts: ["172.18.0.12:6379"]
-  key: metricbeat
-  password: Y&hZ&lgooHaW
-  db: 0
-  datatype: list
+  #hosts: ["172.18.0.12:6379"]
+  #key: metricbeat
+  #password: Y&hZ&lgooHaW
+  #db: 0
+  #datatype: list
   #worker: 1
   #loadbalance: true
   #timeout: 5s
@@ -437,6 +438,12 @@ output.redis:
   #ssl.curve_types: []
   #ssl.renegotiation: never
 
+#----------------------------- Console output ---------------------------------
+#output.console:
+  #enabled: true
+  #codec.json:
+    #pretty: false
+    #escape_html: false
 #================================= Paths ======================================
 #path.home:
 #path.config: ${path.home}
@@ -480,8 +487,8 @@ output.redis:
     #enabled: false
 
 #============================== Kibana =====================================
-#setup.kibana:
-  #host: "172.18.0.9:5601"
+setup.kibana:
+  host: "172.18.0.9:5601"
   #protocol: "https"
   #username: "elastic"
   #password: "changeme"
@@ -499,9 +506,9 @@ output.redis:
 #================================ Logging ======================================
 logging.level: info
 #logging.selectors: ["*"]
-#logging.to_stderr: false
-#logging.to_syslog: false
-#logging.to_eventlog: false
+#logging.to_stderr: true
+#logging.to_syslog: true
+#logging.to_eventlog: true
 #logging.metrics.enabled: true
 #logging.metrics.period: 30s
 logging.to_files: true
@@ -512,13 +519,16 @@ logging.files:
   permissions: 0644
   #rotateeverybytes: 10485760 # = 10MB
   #interval: 0
-logging.json: true
+#logging.json: true
+
 
 #============================== Xpack Monitoring ===============================
-#monitoring.enabled: false
+monitoring.enabled: true
 #monitoring.cluster_uuid:
 #monitoring.elasticsearch:
   #hosts: ["localhost:9200"]
+  #hosts: '["http://172.18.0.2:9200","http://172.18.0.3:9200","http://172.18.0.4:9200"]'
+  #hosts: '["http://es-mt01:9200","http://es-mt02:9200","http://es-mt03:9200","http://es-cdn01:9200","http://es-cdn02:9200","http://es-data01:9200","http://es-data02:9200","http://es-data03:9200","http://es-ing01:9200"]'
   #compression_level: 0
   #protocol: "https"
   #username: "beats_system"

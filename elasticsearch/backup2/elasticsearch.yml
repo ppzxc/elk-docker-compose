@@ -1,0 +1,21 @@
+# ======================== Elasticsearch Configuration =========================
+# ---------------------------------- Cluster -----------------------------------
+#cluster.name: my-application
+# ------------------------------------ Node ------------------------------------
+#node.name: node-1
+#node.attr.rack: r1
+# ----------------------------------- Paths ------------------------------------
+#path.data: /path/to/data
+#path.logs: /usr/share/elasticsearch/logs
+# ----------------------------------- Memory -----------------------------------
+#bootstrap.memory_lock: true
+# ---------------------------------- Network -----------------------------------
+#network.host: 192.168.0.1
+#http.port: 9200
+# --------------------------------- Discovery ----------------------------------
+#discovery.seed_hosts: ["host1", "host2"]
+#cluster.initial_master_nodes: ["node-1", "node-2"]
+# ---------------------------------- Gateway -----------------------------------
+#gateway.recover_after_nodes: 3
+# ---------------------------------- Various -----------------------------------
+#action.destructive_requires_name: true

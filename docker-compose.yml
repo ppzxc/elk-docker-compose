@@ -20,32 +20,13 @@ services:
       - "traefik.tcp.routers.router-redis.entrypoints=entrypoint-redis"
       - "traefik.tcp.routers.router-redis.service=frontend-redis@docker"
       - "traefik.tcp.services.frontend-redis.loadbalancer.server.port=6379"
-
-  es-apm:
-    image: docker.elastic.co/apm/apm-server:7.3.2
-    restart: always
-    container_name: es-apm
-    user: apm-server
-    command: ["--strict.perms=false"]
-    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
-    environment:
-      ELASTICSEARCH_HOSTS: '["http://es-mt01:9200","https://es-mt02:9200","https://es-mt03:9200"]'
-    networks:
-      elastic-network:
-        ipv4_address: 172.18.0.30
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - ./apm-server/apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
         
   es-mt01:
-    #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
     build: ./elasticsearch
     image: custom-elasticsearch
     restart: always
     container_name: es-mt01
     environment:
-      #- network.host=_site_
       - network.host=0.0.0.0
       - node.name=es-mt01
       - node.master=true
@@ -72,6 +53,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /home/operation/data/elasticsearch/master01/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/master01:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
 
       #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
       #- ./ssl/master01.pem:/usr/share/elasticsearch/config/master01.pem
@@ -79,8 +61,7 @@ services:
       #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
       #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
-      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
 
       #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
       #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
@@ -93,15 +74,12 @@ services:
         ipv4_address: 172.18.0.2
 
   es-mt02:
-    #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
     build: ./elasticsearch
     image: custom-elasticsearch
     restart: always
     container_name: es-mt02
     environment:
       - network.host=0.0.0.0
-      #- network.host=_site_
       - node.name=es-mt02
       - node.master=true
       - node.data=false
@@ -127,6 +105,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /home/operation/data/elasticsearch/master02/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/master02:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
 
       #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
       #- ./ssl/master02.pem:/usr/share/elasticsearch/config/master02.pem
@@ -134,8 +113,7 @@ services:
       #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
       #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
-      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
 
       #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
       #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
@@ -147,14 +125,11 @@ services:
         ipv4_address: 172.18.0.3
 
   es-mt03:
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
-    #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
     build: ./elasticsearch
     image: custom-elasticsearch
     restart: always
     container_name: es-mt03
     environment:
-      #- network.host=_site_
       - network.host=0.0.0.0
       - node.name=es-mt03
       - node.master=true
@@ -166,8 +141,6 @@ services:
       - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-      #- xpack.security.transport.ssl.enabled=true
-      #- xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
     ulimits:
@@ -181,6 +154,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /home/operation/data/elasticsearch/master03/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/master03:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
 
       #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
       #- ./ssl/master03.pem:/usr/share/elasticsearch/config/master03.pem
@@ -188,8 +162,7 @@ services:
       #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
       #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
-      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
 
       #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
       #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
@@ -201,14 +174,11 @@ services:
         ipv4_address: 172.18.0.4
 
   es-cdn01:
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
-    #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
     build: ./elasticsearch
     image: custom-elasticsearch
     restart: always
     container_name: es-cdn01
     environment:
-      #- network.host=_site_
       - network.host=0.0.0.0
       - node.name=es-cdn01
       - node.master=false
@@ -220,8 +190,6 @@ services:
       - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-      #- xpack.security.transport.ssl.enabled=true
-      #- xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
     ulimits:
@@ -235,6 +203,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /home/operation/data/elasticsearch/coordinate01/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/coordinate01:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
        
       #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
       #- ./ssl/cdn01.pem:/usr/share/elasticsearch/config/cdn01.pem
@@ -242,8 +211,7 @@ services:
       #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
       #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
-      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
 
       #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
       #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
@@ -255,15 +223,12 @@ services:
         ipv4_address: 172.18.0.5
 
   es-cdn02:
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
-    #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
     build: ./elasticsearch
     image: custom-elasticsearch
     restart: always
     container_name: es-cdn02
     environment:
       - network.host=0.0.0.0
-      #- network.host=_site_
       - node.name=es-cdn02
       - node.master=false
       - node.data=false
@@ -274,8 +239,6 @@ services:
       - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-      #- xpack.security.transport.ssl.enabled=true
-      #- xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
     ulimits:
@@ -289,6 +252,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /home/operation/data/elasticsearch/coordinate02/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/coordinate02:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
 
       #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
       #- ./ssl/cdn02.pem:/usr/share/elasticsearch/config/cdn02.pem
@@ -296,8 +260,7 @@ services:
       #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
       #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
-      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
 
       #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
       #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
@@ -309,15 +272,12 @@ services:
         ipv4_address: 172.18.0.6
 
   es-data01:
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
-    #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
     build: ./elasticsearch
     image: custom-elasticsearch
     restart: always
     container_name: es-data01
     environment:
       - network.host=0.0.0.0
-      #- network.host=_site_
       - node.name=es-data01
       - node.master=false
       - node.data=true
@@ -328,8 +288,6 @@ services:
       - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-      #- xpack.security.transport.ssl.enabled=true
-      #- xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
     ulimits:
@@ -343,6 +301,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /home/operation/data/elasticsearch/data01/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/data01:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
 
       #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
       #- ./ssl/data01.pem:/usr/share/elasticsearch/config/data01.pem
@@ -350,8 +309,7 @@ services:
       #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
       #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
-      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
 
       #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
       #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
@@ -363,15 +321,12 @@ services:
         ipv4_address: 172.18.0.7
 
   es-data02:
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
-    #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
     build: ./elasticsearch
     image: custom-elasticsearch
     restart: always
     container_name: es-data02
     environment:
       - network.host=0.0.0.0
-      #- network.host=_site_
       - node.name=es-data02
       - node.master=false
       - node.data=true
@@ -382,8 +337,6 @@ services:
       - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-      #- xpack.security.transport.ssl.enabled=true
-      #- xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
     ulimits:
@@ -397,6 +350,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /home/operation/data/elasticsearch/data02/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/data02:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
 
       #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
       #- ./ssl/data02.pem:/usr/share/elasticsearch/config/data02.pem
@@ -404,8 +358,7 @@ services:
       #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
       #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
-      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
 
       #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
       #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
@@ -417,15 +370,12 @@ services:
         ipv4_address: 172.18.0.8
 
   es-data03:
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
-    #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
     build: ./elasticsearch
     image: custom-elasticsearch
     restart: always
     container_name: es-data03
     environment:
       - network.host=0.0.0.0
-      #- network.host=_site_
       - node.name=es-data03
       - node.master=false
       - node.data=true
@@ -436,8 +386,6 @@ services:
       - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-      #- xpack.security.transport.ssl.enabled=true
-      #- xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
     ulimits:
@@ -451,6 +399,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /home/operation/data/elasticsearch/data03/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/data03:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
 
       #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
       #- ./ssl/data03.pem:/usr/share/elasticsearch/config/data03.pem
@@ -458,8 +407,7 @@ services:
       #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
       #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
-      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
 
       #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
       #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
@@ -471,15 +419,12 @@ services:
         ipv4_address: 172.18.0.15
 
   es-ing01:
-    #image: amazon/opendistro-for-elasticsearch:1.3.0
-    #image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
     build: ./elasticsearch
     image: custom-elasticsearch
     container_name: es-ing01
     restart: always
     environment:
       - network.host=0.0.0.0
-      #- network.host=_site_
       - node.name=es-ing01
       - node.master=false
       - node.data=false
@@ -490,8 +435,6 @@ services:
       - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-      #- xpack.security.transport.ssl.enabled=true
-      #- xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
     ulimits:
@@ -505,6 +448,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /home/operation/data/elasticsearch/ingest01/:/usr/share/elasticsearch/data
       - /home/operation/data/logs/elasticsearch/ingest01:/usr/share/elasticsearch/logs
+      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
 
       #- ./ssl/rootca.pem:/usr/share/elasticsearch/config/rootca.pem
       #- ./ssl/ing01.pem:/usr/share/elasticsearch/config/ing01.pem
@@ -512,8 +456,7 @@ services:
       #- ./ssl/admin.pem:/usr/share/elasticsearch/config/admin.pem
       #- ./ssl/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
 
-      - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/conf/log4j2.properties
-      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/conf/elasticsearch.yml
+      #- ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
 
       #- ./elasticsearch/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
       #- ./elasticsearch/roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
@@ -527,34 +470,32 @@ services:
   es-kib:
     build: ./kibana
     image: custom-kibana
-    #image: amazon/opendistro-for-elasticsearch-kibana:1.3.0
-    #image: docker.elastic.co/kibana/kibana:7.3.2
     container_name: es-kib
     restart: always
-    #user: root
-    networks: 
-      - elastic-network
+    networks:
+      elastic-network:
+        ipv4_address: 172.18.0.9
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03']
     environment:
-      ELASTICSEARCH_HOSTS: '["http://es-mt01:9200","https://es-mt02:9200","https://es-mt03:9200"]'
+      #ELASTICSEARCH_HOSTS: '["http://es-mt01:9200","https://es-mt02:9200","https://es-mt03:9200","https://es-cdn01:9200","http://es-cdn02:9200","https://es-data01:9200","https://es-data02:9200","https://es-data03:9200","https://es-ing01:9200"]'
       #ELASTICSEARCH_URL: http://172.18.0.2:9200
       #ELASTICSEARCH_HOSTS: http://172.18.0.2:9200
-      SERVER_BASEPATH: /kibana
-      SERVER_REWRITEBASEPATH: "true"
+      #SERVER_BASEPATH: /kibana
+      #SERVER_REWRITEBASEPATH: "true"
       NODE_OPTIONS: "--max-old-space-size=2048"
       #SERVER_SSL_ENABLED: "true"
       #SERVER_SSL_VERIFICATIONMODE: certificate
       #SERVER_SSL_KEY: /usr/share/kibana/config/kib01-key.pem
       #SERVER_SSL_CERTIFICATE: /usr/share/kibana/config/kib01.pem
       #SERVER_SSL_CERTIFICATEAUTHORITIES: /usr/share/kibana/config/rootca.pem
-      #SERVER_NAME: es-kib
+      #SERVER_NAME: "es-kib"
       #SERVER_HOST: _site_
-      #SERVER_PORT: 5601
+      #SERVER_PORT: "5601"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /home/operation/data/logs/elasticsearch/kibana01:/usr/share/kibana/log
       - /home/operation/data/htpasswd/userfile:/userfile
-      #- ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
       #- ./ssl/rootca.pem:/usr/share/kibana/config/rootca.pem
       #- ./ssl/kib01.pem:/usr/share/kibana/config/kib01.pem
       #- ./ssl/kib01-key.pem:/usr/share/kibana/config/kib01-key.pem
@@ -563,8 +504,9 @@ services:
       - "traefik.docker.network=elastic-network"
       - "traefik.http.services.dashboard-kibana.loadbalancer.server.port=5601"
 
-      - "traefik.http.routers.secured-kibana.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/kibana`) || PathPrefix(`/kibana/`))"
+      #- "traefik.http.routers.secured-kibana.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/kibana`) || PathPrefix(`/kibana/`))"
       #- "traefik.http.routers.router-cerebro.rule=Host(`monitor.nanoit.kr`) && (PathPrefix(`/cerebro`) || PathPrefix(`/cerebro/`))"
+      - "traefik.http.routers.secured-kibana.rule=Host(`monitor.nanoit.kr`)"
       - "traefik.http.routers.secured-kibana.entrypoints=entrypoint-https"
       - "traefik.http.routers.secured-kibana.service=dashboard-kibana@docker"
       - "traefik.http.routers.secured-kibana.tls=true"
@@ -577,9 +519,9 @@ services:
     container_name: es-idx
     volumes:
       - /etc/localtime:/etc/localtime:ro
+      - ./logstash/config/:/usr/share/logstash/config/
       - /home/operation/data/elasticsearch/logstash-idx01:/usr/share/logstash/data
       - /home/operation/data/logs/elasticsearch/logstash01:/usr/share/logstash/logs
-      - ./logstash/config/:/usr/share/logstash/config/:ro
     environment:
       LS_JAVA_OPTS: "-Xmx1024m -Xms1024m"
     networks:
@@ -600,8 +542,9 @@ services:
     command: ["--strict.perms=false"]
     user: root
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /proc:/hostfs/proc:ro
       - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
       - /:/hostfs:ro
@@ -622,10 +565,12 @@ services:
     user: root
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./heartbeat/heartbeat.yml:/usr/share/heartbeat/heartbeat.yml:ro
-      - /home/operation/data/logs/elasticsearch/heartbeat01:/usr/share/heartbeat/logs
+      - ./heartbeat/heartbeat.yml:/usr/share/heartbeat/heartbeat.yml
       - /home/operation/data/elasticsearch/heartbeat01/:/usr/share/heartbeat/data
+      - /home/operation/data/logs/elasticsearch/heartbeat01:/usr/share/heartbeat/logs
     network_mode: host
+    #networks:
+    #- elastic-network
     restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
 
@@ -635,9 +580,10 @@ services:
     command: ["--strict.perms=false"]
     user: root
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/usr/share/filebeat/logs/system
 
       - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
       - /home/operation/data/elasticsearch/filebeat01/:/usr/share/filebeat/data
@@ -645,30 +591,31 @@ services:
       - /home/operation/data/logs/elasticsearch:/usr/share/filebeat/logs/elasticsearch
       - /home/operation/data/logs/traefik:/usr/share/filebeat/logs/traefik
       - /home/operation/data/redis/redis.log:/usr/share/filebeat/logs/redis/redis.log
-      - /var/log:/usr/share/filebeat/logs/system
     network_mode: host
+    #networks:
+      #- elastic-network
     restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03', 'es-redis']
 
-  es-ptb:
-    image: docker.elastic.co/beats/packetbeat:7.3.2
-    container_name: es-ptb
-    command: ["--strict.perms=false"]
-    user: root
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+  #es-ptb:
+    #image: docker.elastic.co/beats/packetbeat:7.3.2
+    #container_name: es-ptb
+    #command: ["--strict.perms=false"]
+    #user: root
+    #volumes:
+      #- /etc/localtime:/etc/localtime:ro
+      #- /var/run/docker.sock:/var/run/docker.sock:ro
 
-      - /home/operation/data/elasticsearch/packetbeat01/:/usr/share/packetbeat/data
-      - /home/operation/data/logs/elasticsearch/packetbeat01:/usr/share/packetbeat/logs
+      #- /home/operation/data/elasticsearch/packetbeat01/:/usr/share/packetbeat/data
+      #- /home/operation/data/logs/elasticsearch/packetbeat01:/usr/share/packetbeat/logs
 
-      - ./packetbeat/packetbeat.yml:/usr/share/packetbeat/packetbeat.yml
-    network_mode: host
-    restart: always
-    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
-    cap_add:
-      - NET_RAW
-      - NET_ADMIN
+      #- ./packetbeat/packetbeat.yml:/usr/share/packetbeat/packetbeat.yml
+    #network_mode: host
+    #restart: always
+    #depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
+    #cap_add:
+      #- NET_RAW
+      #- NET_ADMIN
 
 networks:
   elastic-network:

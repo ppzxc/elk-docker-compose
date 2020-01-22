@@ -11,7 +11,7 @@ heartbeat.monitors:
   schedule: '*/5 * * * * * *'
   hosts: ["localhost"]
   ipv4: true
-  ipv6: true
+  #ipv6: true
   mode: any
   timeout: 16s
   wait: 1s
@@ -30,9 +30,9 @@ heartbeat.monitors:
   name: es-idx
   enabled: true
   schedule: '@every 5s' # every 5 seconds from start of beat
-  hosts: ["172.18.0.10:9200"]
+  hosts: ["172.18.0.10:9600"]
   ipv4: true
-  ipv6: true
+  #ipv6: true
   mode: any
   # ports: [80, 9200, 5044]
   #timeout: 16s
@@ -47,6 +47,15 @@ heartbeat.monitors:
   #watch.poll_file:
     #path:
     #interval: 5s
+    
+- type: http
+  name: cerebro
+  enabled: true
+  schedule: '@every 5s'
+  urls: ["http://172.18.0.60:9000"]
+  ipv4: true
+  #ipv6: true
+  mode: any
     
 - type: http
   name: es-ingest
@@ -80,9 +89,9 @@ heartbeat.monitors:
   name: es-kib
   enabled: true
   schedule: '@every 5s'
-  urls: ["http://172.18.0.9:9200"]
+  urls: ["http://172.18.0.9:5601"]
   ipv4: true
-  ipv6: true
+  #ipv6: true
   mode: any
   #watch.poll_file:
     #path:
@@ -234,9 +243,10 @@ name: LOG-MONITORING-SERVER
 
 #================================ Outputs ======================================
 #-------------------------- Elasticsearch output -------------------------------
-#output.elasticsearch:
-  #enabled: true
-  #hosts: ["172.18.0.2:9200"]
+output.elasticsearch:
+  enabled: true
+  hosts: ["172.18.0.2:9200"]
+  #hosts: '["http://172.18.0.2:9200","http://172.18.0.3:9200","http://172.18.0.4:9200"]'
   #compression_level: 0
   #escape_html: false
   #protocol: "https"
@@ -270,16 +280,16 @@ name: LOG-MONITORING-SERVER
   #ssl.renegotiation: never
 
 #------------------------------- Redis output ----------------------------------
-output.redis:
-  enabled: true
+#output.redis:
+  #enabled: true
   #codec.json:
     #pretty: false
     #escape_html: false
-  hosts: ["172.18.0.60:8579"]
-  key: heartbeat
-  password: Y&hZ&lgooHaW
-  db: 0
-  datatype: list
+  #hosts: ["172.18.0.60:8579"]
+  #key: heartbeat
+  #password: Y&hZ&lgooHaW
+  #db: 0
+  #datatype: list
   #worker: 1
   #loadbalance: true
   #timeout: 5s
@@ -343,8 +353,8 @@ output.redis:
     #enabled: false
 
 #============================== Kibana =====================================
-#setup.kibana:
-  #host: "172.18.0.9:5601"
+setup.kibana:
+  host: "172.18.0.9:5601"
   #protocol: "https"
   #username: "elastic"
   #password: "changeme"
@@ -361,10 +371,10 @@ output.redis:
 
 #================================ Logging ======================================
 logging.level: info
-#logging.selectors: [ ]
-#logging.to_stderr: false
-#logging.to_syslog: false
-#logging.to_eventlog: false
+#logging.selectors: ['*']
+#logging.to_stderr: true
+#logging.to_syslog: true
+#logging.to_eventlog: true
 #logging.metrics.enabled: true
 #logging.metrics.period: 30s
 logging.to_files: true
@@ -376,13 +386,22 @@ logging.files:
   permissions: 0644
   #interval: 0
   # rotateonstartup: true
-logging.json: true
+#logging.json: false
+
+#----------------------------- Console output ---------------------------------
+#output.console:
+  #enabled: true
+  #codec.json:
+    #pretty: false
+    #escape_html: false
 
 #============================== Xpack Monitoring ===============================
-#monitoring.enabled: false
+monitoring.enabled: true
 #monitoring.cluster_uuid:
 #monitoring.elasticsearch:
-  #hosts: ["localhost:9200"]
+  #hosts: ["http://172.18.0.2:9200"]
+  #hosts: ["http://es-mt01:9200","http://es-mt02:9200","http://es-mt03:9200","http://es-cdn01:9200","http://es-cdn02:9200","http://es-data01:9200","http://es-data02:9200","http://es-data03:9200","http://es-ing01:9200"]
+  #hosts: '["http://172.18.0.2:9200","http://172.18.0.3:9200","http://172.18.0.4:9200"]'
   #compression_level: 0
   #protocol: "https"
   #username: "beats_system"

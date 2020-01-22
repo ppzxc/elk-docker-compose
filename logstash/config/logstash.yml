@@ -69,7 +69,8 @@ node.name: LOG-MONITORING-SERVER
 #   * debug
 #   * trace
 #
-#log.level: info
+log.level: info
+#log.format: json
 # path.logs:
 #
 # ------------ Other Settings --------------
@@ -81,10 +82,11 @@ node.name: LOG-MONITORING-SERVER
 #
 # X-Pack Monitoring
 # https://www.elastic.co/guide/en/logstash/current/monitoring-logstash.html
-#xpack.monitoring.enabled: false
+xpack.monitoring.enabled: true
 #xpack.monitoring.elasticsearch.username: logstash_system
 #xpack.monitoring.elasticsearch.password: password
-#xpack.monitoring.elasticsearch.hosts: ["https://es1:9200", "https://es2:9200"]
+#xpack.monitoring.elasticsearch.hosts: ["http://172.18.0.2:9200","https://172.18.0.3:9200","https://172.18.0.4:9200"]
+xpack.monitoring.elasticsearch.hosts: ["http://es-mt01:9200","http://es-mt02:9200","http://es-mt03:9200","http://es-cdn01:9200","http://es-cdn02:9200","http://es-data01:9200","http://es-data02:9200","http://es-data03:9200","http://es-ing01:9200"]
 #xpack.monitoring.elasticsearch.ssl.certificate_authority: [ "/path/to/ca.crt" ]
 #xpack.monitoring.elasticsearch.ssl.truststore.path: path/to/file
 #xpack.monitoring.elasticsearch.ssl.truststore.password: password
@@ -92,8 +94,8 @@ node.name: LOG-MONITORING-SERVER
 #xpack.monitoring.elasticsearch.ssl.keystore.password: password
 #xpack.monitoring.elasticsearch.ssl.verification_mode: certificate
 #xpack.monitoring.elasticsearch.sniffing: false
-#xpack.monitoring.collection.interval: 10s
-#xpack.monitoring.collection.pipeline.details.enabled: true
+xpack.monitoring.collection.interval: 10s
+xpack.monitoring.collection.pipeline.details.enabled: true
 #
 # X-Pack Management
 # https://www.elastic.co/guide/en/logstash/current/logstash-centralized-pipeline-management.html

@@ -1,0 +1,279 @@
+###################### Filebeat Configuration Example #########################
+#==========================  Modules configuration =============================
+filebeat.modules:
+#-------------------------------- System Module --------------------------------
+- module: system
+  syslog:
+    enabled: true
+    var.paths: [ "/usr/share/filebeat/logs/system/messages*" ]
+  auth:
+    enabled: true
+    var.paths: [ "/usr/share/filebeat/logs/system/secure*" ]
+
+#------------------------------ Container input --------------------------------
+- type: container
+  enabled: true
+  paths:
+    -/var/lib/docker/containers/*/*.log
+  stream: all
+
+#------------------------------- Traefik Module -------------------------------
+#- module: traefik
+  #access:
+    #enabled: true
+    #var.paths: [ "/usr/share/filebeat/logs/traefik/access.log" ]
+    #input:
+
+#-------------------------------- Redis Module --------------------------------
+#- module: redis
+  #log:
+    #enabled: true
+    #var.paths: ["/usr/share/filebeat/logs/redis/redis.log*"]
+  #slowlog:
+    #enabled: true
+    #var.hosts: ["172.18.0.12:6379"]
+    #var.password: Y&hZ&lgooHaW
+
+#------------------------------- Iptables Module -------------------------------
+#- module: iptables
+  #log:
+    #enabled: true
+    #var.input:
+    #var.paths:
+ 
+#------------------------------- Logstash Module -------------------------------
+#- module: logstash
+  #log:
+    #enabled: true
+    #var.paths: ["/usr/share/filebeat/logs/elasticsearch/logstash01/logstash*"]
+  #slowlog:
+    #enabled: true
+    #var.paths: ["/usr/share/filebeat/logs/elasticsearch/logstash01/logstash-slowlog*"]
+
+#---------------------------- Elasticsearch Module ----------------------------
+#- module: elasticsearch
+#  server:
+#    enabled: true
+#    var.paths: 
+#      - /usr/share/filebeat/logs/elasticsearch/master01/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/master02/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/master03/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/coordinate01/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/coordinate02/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/ingest01/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/data01/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/data02/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/data03/*_server.json
+#
+#  gc:
+#    enabled: true
+#    var.paths: 
+#      - /usr/share/filebeat/logs/elasticsearch/master01/gc.log.[0-9]*
+#      - /usr/share/filebeat/logs/elasticsearch/master02/gc.log.[0-9]*
+#      - /usr/share/filebeat/logs/elasticsearch/master03/gc.log.[0-9]*
+#      - /usr/share/filebeat/logs/elasticsearch/coordinate01/gc.log.[0-9]*
+#      - /usr/share/filebeat/logs/elasticsearch/coordinate02/gc.log.[0-9]*
+#      - /usr/share/filebeat/logs/elasticsearch/ingest01/gc.log.[0-9]*
+#      - /usr/share/filebeat/logs/elasticsearch/data01/gc.log.[0-9]*
+#      - /usr/share/filebeat/logs/elasticsearch/data02/gc.log.[0-9]*
+#      - /usr/share/filebeat/logs/elasticsearch/data03/gc.log.[0-9]*
+#      - /usr/share/filebeat/logs/elasticsearch/master01/gc.log
+#      - /usr/share/filebeat/logs/elasticsearch/master02/gc.log
+#      - /usr/share/filebeat/logs/elasticsearch/master03/gc.log
+#      - /usr/share/filebeat/logs/elasticsearch/coordinate01/gc.log
+#      - /usr/share/filebeat/logs/elasticsearch/coordinate02/gc.log
+#      - /usr/share/filebeat/logs/elasticsearch/ingest01/gc.log
+#      - /usr/share/filebeat/logs/elasticsearch/data01/gc.log
+#      - /usr/share/filebeat/logs/elasticsearch/data02/gc.log
+#      - /usr/share/filebeat/logs/elasticsearch/data03/gc.log
+#
+#  audit:
+#    enabled: true
+#    var.paths:
+#      - /usr/share/filebeat/logs/elasticsearch/master01/*_audit.json
+#      - /usr/share/filebeat/logs/elasticsearch/master02/*_audit.json
+#      - /usr/share/filebeat/logs/elasticsearch/master03/*_audit.json
+#      - /usr/share/filebeat/logs/elasticsearch/coordinate01/*_audit.json
+#      - /usr/share/filebeat/logs/elasticsearch/coordinate02/*_audit.json
+#      - /usr/share/filebeat/logs/elasticsearch/ingest01/*_audit.json
+#      - /usr/share/filebeat/logs/elasticsearch/data01/*_audit.json
+#      - /usr/share/filebeat/logs/elasticsearch/data02/*_audit.json
+#      - /usr/share/filebeat/logs/elasticsearch/data03/*_audit.json
+#  
+#  slowlog:
+#    enabled: true
+#    var.paths: 
+#      - /usr/share/filebeat/logs/elasticsearch/master01/*_slowlog.json
+#      - /usr/share/filebeat/logs/elasticsearch/master02/*_slowlog.json
+#      - /usr/share/filebeat/logs/elasticsearch/master03/*_slowlog.json
+#      - /usr/share/filebeat/logs/elasticsearch/coordinate01/*_slowlog.json
+#      - /usr/share/filebeat/logs/elasticsearch/coordinate02/*_slowlog.json
+#      - /usr/share/filebeat/logs/elasticsearch/ingest01/*_slowlog.json
+#      - /usr/share/filebeat/logs/elasticsearch/data01/*_slowlog.json
+#      - /usr/share/filebeat/logs/elasticsearch/data02/*_slowlog.json
+#      - /usr/share/filebeat/logs/elasticsearch/data03/*_slowlog.json
+#  
+#  deprecation:
+#    enabled: true
+#    var.paths: 
+#      - /usr/share/filebeat/logs/elasticsearch/master01/*_deprecation.json
+#      - /usr/share/filebeat/logs/elasticsearch/master02/*_deprecation.json
+#      - /usr/share/filebeat/logs/elasticsearch/master03/*_deprecation.json
+#      - /usr/share/filebeat/logs/elasticsearch/coordinate01/*_deprecation.json
+#      - /usr/share/filebeat/logs/elasticsearch/coordinate02/*_deprecation.json
+#      - /usr/share/filebeat/logs/elasticsearch/ingest01/*_deprecation.json
+#      - /usr/share/filebeat/logs/elasticsearch/data01/*_deprecation.json
+#      - /usr/share/filebeat/logs/elasticsearch/data02/*_deprecation.json
+#      - /usr/share/filebeat/logs/elasticsearch/data03/*_deprecation.json
+    
+#=========================== Filebeat inputs =============================
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /usr/share/filebeat/logs/system/cron*
+    #- /usr/share/filebeat/logs/elasticsearch/metricbeat01/metricbeat*
+    #- /usr/share/filebeat/logs/elasticsearch/heartbeat01/heartbeat*
+    #- /usr/share/filebeat/logs/elasticsearch/filebeat01/filebeat*
+  exclude_files: [ '.gz$', 'messages*', 'secure*' ]
+  encoding: utf-8 # plain or utf-8 or euc-kr
+  #exclude_lines: ['^DBG','^DEBUG']
+  #include_lines: ['^ERR', '^WARN']
+  #fields:
+    #level: debug
+    #review: 1
+  #multiline.pattern: ^\[
+  #multiline.negate: false
+  #multiline.match: after
+  
+#========================== Filebeat autodiscover ==============================
+#filebeat.autodiscover:
+#  providers:
+#    - type: docker
+#      templates:
+#        - condition:
+#            equals.docker.container.image: busybox
+#          config:
+#            - type: container
+#              paths:
+#                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+    
+#============================= Filebeat modules ===============================
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+  #reload.period: 10s
+    
+#==================== Elasticsearch template setting ==========================
+#setup.template.enabled: true
+#setup.template.name: "host-%{[agent.version]}"
+#setup.template.pattern: "host-%{[agent.version]}-*"
+#setup.template.fields: "${path.config}/fields.yml"
+#setup.template.append_fields:
+#- name: field_name
+#  type: field_type
+#setup.template.json.enabled: false
+#setup.template.json.path: "${path.config}/template.json"
+#setup.template.json.name: ""
+#setup.template.overwrite: false
+
+setup.template.settings:
+  index.number_of_shards: 6
+  index.codec: best_compression
+  #_source.enabled: false
+    
+#================================ General =====================================
+name: LOG-MONITORING-SERVER
+tags: ["traefik", "elasticsearch", "auth", "redis", "cron", "messages"]
+#fields:
+#  env: staging
+    
+#============================== Dashboards =====================================
+#setup.dashboards.enabled: true
+#setup.dashboards.url:
+    
+#============================== Kibana =====================================
+#setup.kibana:
+  #host: "172.18.0.9:5601/kibana"
+  #space.id:
+    
+#================================ Outputs =====================================
+#output.elasticsearch:
+  #enabled: true
+  #hosts: ["172.18.0.2:9200"]
+  #hosts: ["http://es-mt01:9200","http://es-mt02:9200","http://es-mt03:9200","http://es-cdn01:9200","http://es-cdn02:9200","http://es-data01:9200","http://es-data02:9200","http://es-data03:9200","http://es-ing01:9200"]
+  #index: "host-%{[agent.version]}-%{+yyyy.MM.dd}"
+  #index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+
+#------------------------------- Redis output ----------------------------------
+output.redis:
+  enabled: true
+#  codec.json:
+#    pretty: true
+#    escape_html: false
+  hosts: ["172.18.0.60:8579"]
+  key: filebeat
+  password: Y&hZ&lgooHaW
+  db: 0
+  datatype: list
+  #worker: 1
+  #loadbalance: true
+  #timeout: 5s
+  #max_retries: 3
+  
+  #backoff.init: 1s
+  #backoff.max: 60s
+  #bulk_max_size: 2048
+  
+  #proxy_url:
+  #proxy_use_local_resolver: false
+  #ssl.enabled: true
+  #ssl.verification_mode: full
+  
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
+  #ssl.renegotiation: never
+      
+#================================ Processors =====================================
+processors:
+  - add_host_metadata: ~
+  #- add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  #- add_kubernetes_metadata: ~
+    
+#================================ Logging =====================================
+logging.level: info
+#logging.selectors: ["*"]
+logging.to_stderr: true
+logging.to_syslog: true
+logging.to_eventlog: true
+logging.to_files: false
+#logging.files:
+  #path: /usr/share/filebeat/logs/elasticsearch/filebeat01
+  #name: filebeat
+  #keepfiles: 5
+  #permissions: 0644
+  #interval: 0
+  #rotateonstartup: true
+#logging.json: true
+
+#----------------------------- Console output ---------------------------------
+#output.console:
+  #enabled: true
+  #codec.json:
+    #pretty: false
+    #escape_html: false
+
+#================================ HTTP Endpoint ======================================
+http.enabled: true
+http.host: localhost
+http.port: 5066
+#http.named_pipe.user:
+#http.named_pipe.security_descriptor:
+#monitoring.enabled: true
