@@ -43,27 +43,27 @@ filebeat.modules:
       - /usr/share/filebeat/logs/elasticsearch/data02/*_server.json
       - /usr/share/filebeat/logs/elasticsearch/data03/*_server.json
 
-  gc:
-    enabled: true
-    var.paths: 
-      - /usr/share/filebeat/logs/elasticsearch/master01/gc.log.[0-9]*
-      - /usr/share/filebeat/logs/elasticsearch/master02/gc.log.[0-9]*
-      - /usr/share/filebeat/logs/elasticsearch/master03/gc.log.[0-9]*
-      - /usr/share/filebeat/logs/elasticsearch/coordinate01/gc.log.[0-9]*
-      - /usr/share/filebeat/logs/elasticsearch/coordinate02/gc.log.[0-9]*
-      - /usr/share/filebeat/logs/elasticsearch/ingest01/gc.log.[0-9]*
-      - /usr/share/filebeat/logs/elasticsearch/data01/gc.log.[0-9]*
-      - /usr/share/filebeat/logs/elasticsearch/data02/gc.log.[0-9]*
-      - /usr/share/filebeat/logs/elasticsearch/data03/gc.log.[0-9]*
-      - /usr/share/filebeat/logs/elasticsearch/master01/gc.log
-      - /usr/share/filebeat/logs/elasticsearch/master02/gc.log
-      - /usr/share/filebeat/logs/elasticsearch/master03/gc.log
-      - /usr/share/filebeat/logs/elasticsearch/coordinate01/gc.log
-      - /usr/share/filebeat/logs/elasticsearch/coordinate02/gc.log
-      - /usr/share/filebeat/logs/elasticsearch/ingest01/gc.log
-      - /usr/share/filebeat/logs/elasticsearch/data01/gc.log
-      - /usr/share/filebeat/logs/elasticsearch/data02/gc.log
-      - /usr/share/filebeat/logs/elasticsearch/data03/gc.log
+  #gc:
+    #enabled: true
+    #var.paths: 
+      #- /usr/share/filebeat/logs/elasticsearch/master01/gc.log.[0-9]*
+      #- /usr/share/filebeat/logs/elasticsearch/master02/gc.log.[0-9]*
+      #- /usr/share/filebeat/logs/elasticsearch/master03/gc.log.[0-9]*
+      #- /usr/share/filebeat/logs/elasticsearch/coordinate01/gc.log.[0-9]*
+      #- /usr/share/filebeat/logs/elasticsearch/coordinate02/gc.log.[0-9]*
+      #- /usr/share/filebeat/logs/elasticsearch/ingest01/gc.log.[0-9]*
+      #- /usr/share/filebeat/logs/elasticsearch/data01/gc.log.[0-9]*
+      #- /usr/share/filebeat/logs/elasticsearch/data02/gc.log.[0-9]*
+      #- /usr/share/filebeat/logs/elasticsearch/data03/gc.log.[0-9]*
+      #- /usr/share/filebeat/logs/elasticsearch/master01/gc.log
+      #- /usr/share/filebeat/logs/elasticsearch/master02/gc.log
+      #- /usr/share/filebeat/logs/elasticsearch/master03/gc.log
+      #- /usr/share/filebeat/logs/elasticsearch/coordinate01/gc.log
+      #- /usr/share/filebeat/logs/elasticsearch/coordinate02/gc.log
+      #- /usr/share/filebeat/logs/elasticsearch/ingest01/gc.log
+      #- /usr/share/filebeat/logs/elasticsearch/data01/gc.log
+      #- /usr/share/filebeat/logs/elasticsearch/data02/gc.log
+      #- /usr/share/filebeat/logs/elasticsearch/data03/gc.log
 
   audit:
     enabled: true
@@ -100,19 +100,19 @@ filebeat.modules:
     #var.paths:
 
 #-------------------------------- Kibana Module --------------------------------
-#- module: kibana
-  #log:
-    #enabled: true
-    #var.paths:
+- module: kibana
+  log:
+    enabled: true
+    var.paths: ["/usr/share/filebeat/logs/elasticsearch/kibana01/kibana.log"]
 
 #------------------------------- Logstash Module -------------------------------
-#- module: logstash
-  #log:
-    #enabled: true
-    # var.paths:
-  #slowlog:
-    #enabled: true
-    #var.paths:
+- module: logstash
+  log:
+    enabled: true
+    var.paths: ["/usr/share/filebeat/logs/elasticsearch/logstash01/logstash-plain.log"]
+  slowlog:
+    enabled: true
+    var.paths: ["/usr/share/filebeat/logs/elasticsearch/logstash01/logstash-slowlog-plain.log"]
 
 #-------------------------------- MySQL Module --------------------------------
 #- module: mysql
@@ -154,7 +154,7 @@ filebeat.modules:
 - module: redis
   log:
     enabled: true
-    var.paths: ["/usr/share/filebeat/logs/redis/redis.log*"]
+    var.paths: ["/usr/share/filebeat/logs/redis/redis.log"]
   slowlog:
     enabled: true
     var.hosts: ["172.18.0.60:8579"]
@@ -164,7 +164,7 @@ filebeat.modules:
 - module: traefik
   access:
     enabled: true
-    var.paths: ["/usr/share/filebeat/logs/traefik/accees*.log*"]
+    var.paths: ["/usr/share/filebeat/logs/traefik/accees.log"]
     #input:
 
 #--------------------------------- Zeek Module ---------------------------------
@@ -187,9 +187,13 @@ filebeat.modules:
 filebeat.inputs:
 #------------------------------ Log input --------------------------------
 - type: log
-  enabled: false
+  enabled: true
   paths:
     - /usr/share/filebeat/logs/system/cron*
+    - /usr/share/filebeat/logs/filebeat/*
+    - /usr/share/filebeat/logs/elasticsearch/metricbeat01/*
+    #- /usr/share/filebeat/logs/elasticsearch/kibana01/*
+    - /usr/share/filebeat/logs/elasticsearch/heartbeat01/*
     #- c:\programdata\elasticsearch\logs\*
   #encoding: plain
   #exclude_lines: ['^DBG']
@@ -462,8 +466,8 @@ name: LOG-MONITORING-SERVER
 #    #  key:                   "/etc/pki/client/cert.key"
 #processors:
 #- add_docker_metadata: ~
-#processors:
-#- add_host_metadata:
+processors:
+- add_host_metadata:
 #   netinfo.enabled: false
 #processors:
 #- add_process_metadata:
@@ -511,9 +515,9 @@ name: LOG-MONITORING-SERVER
 #    ignore_missing: true
 #================================ Outputs ======================================
 #-------------------------- Elasticsearch output -------------------------------
-output.elasticsearch:
+#output.elasticsearch:
   #enabled: true
-  hosts: ["172.18.0.2:9200"]
+  #hosts: ["172.18.0.2:9200"]
   #hosts: '["http://172.18.0.2:9200","http://172.18.0.3:9200","http://172.18.0.4:9200"]'
   #compression_level: 0
   #escape_html: false
@@ -548,16 +552,16 @@ output.elasticsearch:
   #ssl.renegotiation: never
 
 #------------------------------- Redis output ----------------------------------
-#output.redis:
-  #enabled: true
-  #codec.json:
-    #pretty: false
+output.redis:
+  enabled: true
+  codec.json:
+    pretty: true
     #escape_html: false
-  #hosts: ["172.18.0.60:8579"]
-  #key: filebeat
-  #password: Y&hZ&lgooHaW
-  #db: 0
-  #datatype: list
+  hosts: ["172.18.0.60:8579"]
+  key: filebeat
+  password: Y&hZ&lgooHaW
+  db: 0
+  datatype: list
   #worker: 1
   #loadbalance: true
   #timeout: 5s
@@ -588,7 +592,7 @@ output.elasticsearch:
 #keystore.path: "${path.config}/beats.keystore"
 
 #============================== Dashboards =====================================
-#setup.dashboards.enabled: false
+#setup.dashboards.enabled: true
 #setup.dashboards.directory: ${path.home}/kibana
 #setup.dashboards.url:
 #setup.dashboards.file:
@@ -610,13 +614,13 @@ output.elasticsearch:
 #  type: field_type
 #setup.template.json.enabled: false
 #setup.template.json.path: "${path.config}/template.json"
-#setup.template.json.name: ""
+#setup.template.json.name: "host"
 #setup.template.overwrite: false
-setup.template.settings:
-  index:
-    number_of_shards: 6
-    codec: best_compression
-    number_of_routing_shards: 30
+#setup.template.settings:
+  #index:
+    #number_of_shards: 6
+    #codec: best_compression
+    #number_of_routing_shards: 30
   #_source:
     #enabled: false
 
@@ -630,8 +634,8 @@ setup.template.settings:
 #setup.ilm.overwrite: false
 
 #============================== Kibana =====================================
-setup.kibana:
-  host: "172.18.0.9:5601"
+#setup.kibana:
+  #host: "172.18.0.9:5601"
   #protocol: "https"
   #username: "elastic"
   #password: "changeme"
@@ -665,7 +669,7 @@ logging.files:
 #logging.json: false
 
 #============================== Xpack Monitoring ===============================
-monitoring.enabled: true
+#monitoring.enabled: true
 #monitoring.cluster_uuid:
 #monitoring.elasticsearch:
   #hosts: ["localhost:9200"]
@@ -698,7 +702,7 @@ monitoring.enabled: true
   #state.period: 1m
 
 #================================ HTTP Endpoint ======================================
-http.enabled: false
+http.enabled: true
 http.host: localhost
 http.port: 5066
 

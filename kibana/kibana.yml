@@ -3,8 +3,8 @@ server.host: "0"
 #server.basePath: "/kibana"
 #server.rewriteBasePath: true
 #server.maxPayloadBytes: 1048576
-server.name: "es-kib"
-elasticsearch.hosts: ["http://es-mt01:9200","https://es-mt02:9200","https://es-mt03:9200","https://es-cdn01:9200","http://es-cdn02:9200","https://es-data01:9200","https://es-data02:9200","https://es-data03:9200","https://es-ing01:9200"]
+#server.name: "es-kib"
+#elasticsearch.hosts: ["http://es-mt01:9200","https://es-mt02:9200","https://es-mt03:9200","https://es-cdn01:9200","http://es-cdn02:9200","https://es-data01:9200","https://es-data02:9200","https://es-data03:9200","https://es-ing01:9200"]
 #elasticsearch.preserveHost: true
 #kibana.index: ".kibana"
 #kibana.defaultAppId: "home"
@@ -25,9 +25,9 @@ elasticsearch.hosts: ["http://es-mt01:9200","https://es-mt02:9200","https://es-m
 #elasticsearch.startupTimeout: 5000
 #elasticsearch.logQueries: false
 #pid.file: /var/run/kibana.pid
-logging.dest: stdout
+logging.dest: /usr/share/kibana/log/kibana.log
 #logging.silent: false
 #logging.quiet: false
-#logging.verbose: false
+#logging.verbose: true
 #ops.interval: 5000
 #i18n.locale: "en"

@@ -19,6 +19,7 @@ services:
       - "traefik.tcp.routers.router-redis.rule=HostSNI(`*`)"
       - "traefik.tcp.routers.router-redis.entrypoints=entrypoint-redis"
       - "traefik.tcp.routers.router-redis.service=frontend-redis@docker"
+      #- "traefik.tcp.routers.router-redis.tls=true"
       - "traefik.tcp.services.frontend-redis.loadbalancer.server.port=6379"
         
   es-mt01:
@@ -477,9 +478,7 @@ services:
         ipv4_address: 172.18.0.9
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03']
     environment:
-      #ELASTICSEARCH_HOSTS: '["http://es-mt01:9200","https://es-mt02:9200","https://es-mt03:9200","https://es-cdn01:9200","http://es-cdn02:9200","https://es-data01:9200","https://es-data02:9200","https://es-data03:9200","https://es-ing01:9200"]'
-      #ELASTICSEARCH_URL: http://172.18.0.2:9200
-      #ELASTICSEARCH_HOSTS: http://172.18.0.2:9200
+      ELASTICSEARCH_HOSTS: '["http://es-mt01:9200","http://es-mt02:9200","http://es-mt03:9200","http://es-cdn01:9200","http://es-cdn02:9200","http://es-data01:9200","http://es-data02:9200","http://es-data03:9200","http://es-ing01:9200"]'
       #SERVER_BASEPATH: /kibana
       #SERVER_REWRITEBASEPATH: "true"
       NODE_OPTIONS: "--max-old-space-size=2048"
@@ -489,8 +488,9 @@ services:
       #SERVER_SSL_CERTIFICATE: /usr/share/kibana/config/kib01.pem
       #SERVER_SSL_CERTIFICATEAUTHORITIES: /usr/share/kibana/config/rootca.pem
       #SERVER_NAME: "es-kib"
-      #SERVER_HOST: _site_
+      #SERVER_HOST: 0
       #SERVER_PORT: "5601"
+      #LOGGING_DEST: "stdout"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /home/operation/data/logs/elasticsearch/kibana01:/usr/share/kibana/log
@@ -529,12 +529,12 @@ services:
         ipv4_address: 172.18.0.10
     restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03', 'es-kib']
-    labels:
-      - "traefik.enable=true"
-      - "traefik.tcp.routers.router-logstash.rule=HostSNI(`*`)"
-      - "traefik.tcp.routers.router-logstash.entrypoints=entrypoint-redis"
-      - "traefik.tcp.routers.router-logstash.service=frontend-redis@docker"
-      - "traefik.tcp.services.frontend-logstash.loadbalancer.server.port=5044"
+    #labels:
+    #- "traefik.enable=true"
+    #- "traefik.tcp.routers.router-logstash.rule=HostSNI(`*`)"
+    #- "traefik.tcp.routers.router-logstash.entrypoints=entrypoint-redis"
+    #- "traefik.tcp.routers.router-logstash.service=frontend-redis@docker"
+    #- "traefik.tcp.services.frontend-logstash.loadbalancer.server.port=5044"
 
   es-mtb:
     image: docker.elastic.co/beats/metricbeat:7.3.2
@@ -569,8 +569,6 @@ services:
       - /home/operation/data/elasticsearch/heartbeat01/:/usr/share/heartbeat/data
       - /home/operation/data/logs/elasticsearch/heartbeat01:/usr/share/heartbeat/logs
     network_mode: host
-    #networks:
-    #- elastic-network
     restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
 
@@ -590,7 +588,7 @@ services:
 
       - /home/operation/data/logs/elasticsearch:/usr/share/filebeat/logs/elasticsearch
       - /home/operation/data/logs/traefik:/usr/share/filebeat/logs/traefik
-      - /home/operation/data/redis/redis.log:/usr/share/filebeat/logs/redis/redis.log
+      - /home/operation/data/redis:/usr/share/filebeat/logs/redis
     network_mode: host
     #networks:
       #- elastic-network

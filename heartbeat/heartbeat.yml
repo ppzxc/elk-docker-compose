@@ -52,7 +52,7 @@ heartbeat.monitors:
   name: cerebro
   enabled: true
   schedule: '@every 5s'
-  urls: ["http://172.18.0.60:9000"]
+  urls: ["http://172.18.0.61:9000"]
   ipv4: true
   #ipv6: true
   mode: any
@@ -243,9 +243,9 @@ name: LOG-MONITORING-SERVER
 
 #================================ Outputs ======================================
 #-------------------------- Elasticsearch output -------------------------------
-output.elasticsearch:
-  enabled: true
-  hosts: ["172.18.0.2:9200"]
+#output.elasticsearch:
+  #enabled: true
+  #hosts: ["172.18.0.2:9200"]
   #hosts: '["http://172.18.0.2:9200","http://172.18.0.3:9200","http://172.18.0.4:9200"]'
   #compression_level: 0
   #escape_html: false
@@ -257,6 +257,8 @@ output.elasticsearch:
     #param2: value2
   #worker: 1
   #index: "heartbeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+  #indices:
+    #- index: "host-heartbeat-%{[agent.version]}-%{+yyyy.MM.dd}"
   #pipeline: ""
   #path: "/elasticsearch"
   #headers:
@@ -280,16 +282,16 @@ output.elasticsearch:
   #ssl.renegotiation: never
 
 #------------------------------- Redis output ----------------------------------
-#output.redis:
-  #enabled: true
-  #codec.json:
-    #pretty: false
+output.redis:
+  enabled: true
+  codec.json:
+    pretty: true
     #escape_html: false
-  #hosts: ["172.18.0.60:8579"]
-  #key: heartbeat
-  #password: Y&hZ&lgooHaW
-  #db: 0
-  #datatype: list
+  hosts: ["172.18.0.60:8579"]
+  key: heartbeat
+  password: Y&hZ&lgooHaW
+  db: 0
+  datatype: list
   #worker: 1
   #loadbalance: true
   #timeout: 5s
@@ -326,13 +328,14 @@ output.elasticsearch:
 #setup.dashboards.file:
 #setup.dashboards.beat: heartbeat
 #setup.dashboards.kibana_index: .kibana
-#setup.dashboards.index:
+#setup.dashboards.index: "host-heartbeat-%{[agent.version]}-*"
 #setup.dashboards.always_kibana: false
 #setup.dashboards.retry.enabled: false
 #setup.dashboards.retry.interval: 1s
 #setup.dashboards.retry.maximum: 0
 
 #============================== Template =====================================
+#setup.ilm.enabled: false
 #setup.template.enabled: true
 #setup.template.name: "heartbeat-%{[agent.version]}"
 #setup.template.pattern: "heartbeat-%{[agent.version]}-*"
@@ -353,12 +356,12 @@ output.elasticsearch:
     #enabled: false
 
 #============================== Kibana =====================================
-setup.kibana:
-  host: "172.18.0.9:5601"
+#setup.kibana:
+  #host: "172.18.0.9:5601"
   #protocol: "https"
   #username: "elastic"
   #password: "changeme"
-  #path: "/kibana"
+  #path: "/"
   #ssl.enabled: true
   #ssl.verification_mode: full
   #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
@@ -396,7 +399,7 @@ logging.files:
     #escape_html: false
 
 #============================== Xpack Monitoring ===============================
-monitoring.enabled: true
+#monitoring.enabled: true
 #monitoring.cluster_uuid:
 #monitoring.elasticsearch:
   #hosts: ["http://172.18.0.2:9200"]

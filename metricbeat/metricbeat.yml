@@ -371,9 +371,9 @@ processors:
 
 #================================ Outputs ======================================
 #-------------------------- Elasticsearch output -------------------------------
-output.elasticsearch:
+#output.elasticsearch:
   #enabled: true
-  hosts: ["172.18.0.2:9200"]
+  #hosts: ["172.18.0.2:9200"]
   #hosts: '["http://172.18.0.2:9200","http://172.18.0.3:9200","http://172.18.0.4:9200"]'
   #compression_level: 0
   #escape_html: false
@@ -408,16 +408,16 @@ output.elasticsearch:
   #ssl.renegotiation: never
 
 #------------------------------- Redis output ----------------------------------
-#output.redis:
-  #enabled: true
-  #codec.json:
-    #pretty: false
+output.redis:
+  enabled: true
+  codec.json:
+    pretty: true
     #escape_html: false
-  #hosts: ["172.18.0.12:6379"]
-  #key: metricbeat
-  #password: Y&hZ&lgooHaW
-  #db: 0
-  #datatype: list
+  hosts: ["172.18.0.12:6379"]
+  key: metricbeat
+  password: Y&hZ&lgooHaW
+  db: 0
+  datatype: list
   #worker: 1
   #loadbalance: true
   #timeout: 5s
@@ -477,18 +477,18 @@ output.elasticsearch:
 #setup.template.json.enabled: false
 #setup.template.json.path: "${path.config}/template.json"
 #setup.template.json.name: ""
-#setup.template.overwrite: false
-#setup.template.settings:
-  #index:
-    #number_of_shards: 6
-    #codec: best_compression
-    #number_of_routing_shards: 30
+#setup.template.overwrite: true
+setup.template.settings:
+  index:
+    number_of_shards: 6
+    codec: best_compression
+    number_of_routing_shards: 30
   #_source:
     #enabled: false
 
 #============================== Kibana =====================================
-setup.kibana:
-  host: "172.18.0.9:5601"
+#setup.kibana:
+  #host: "172.18.0.9:5601"
   #protocol: "https"
   #username: "elastic"
   #password: "changeme"
@@ -523,7 +523,7 @@ logging.files:
 
 
 #============================== Xpack Monitoring ===============================
-monitoring.enabled: true
+#monitoring.enabled: true
 #monitoring.cluster_uuid:
 #monitoring.elasticsearch:
   #hosts: ["localhost:9200"]
