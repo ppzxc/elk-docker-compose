@@ -12,9 +12,11 @@
 - 2 coordinate
 - 3 data
 - 1 ingest
+- open distro alert, perftop, sql
 
 ## kibana
-- 
+- kibana
+- open distro alert module
 
 ## logstash
 - indexer
@@ -24,5 +26,3 @@
 
 ## metricbeat host
 - host machine monitoring beat
-
-## ff

@@ -43,6 +43,8 @@ services:
       #- xpack.security.enabled=true
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
+        #ports:
+            #- "9600:9600"
     ulimits:
       memlock:
         soft: -1

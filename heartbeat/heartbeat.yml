@@ -11,7 +11,7 @@ heartbeat.monitors:
   schedule: '*/5 * * * * * *'
   hosts: ["localhost"]
   ipv4: true
-  #ipv6: true
+  ipv6: true
   mode: any
   timeout: 16s
   wait: 1s
@@ -26,14 +26,14 @@ heartbeat.monitors:
   #reload.enabled: true
   #reload.period: 1s
 
-- type: tcp
-  name: es-idx
-  enabled: true
-  schedule: '@every 5s' # every 5 seconds from start of beat
-  hosts: ["172.18.0.10:9600"]
-  ipv4: true
+#- type: tcp
+  #name: es-idx
+  #enabled: true
+  #schedule: '@every 5s' # every 5 seconds from start of beat
+  #hosts: ["172.18.0.10:9600"]
+  #ipv4: true
   #ipv6: true
-  mode: any
+  #mode: any
   # ports: [80, 9200, 5044]
   #timeout: 16s
   #check:
@@ -48,11 +48,20 @@ heartbeat.monitors:
     #path:
     #interval: 5s
     
-- type: http
+- type: tcp
   name: cerebro
   enabled: true
   schedule: '@every 5s'
-  urls: ["http://172.18.0.61:9000"]
+  hosts: ["172.18.0.61:9000"]
+  ipv4: true
+  ipv6: true
+  mode: any
+
+- type: http
+  name: traefik
+  enabled: true
+  schedule: '@every 5s'
+  urls: ["http://172.18.0.60:443"]
   ipv4: true
   #ipv6: true
   mode: any
