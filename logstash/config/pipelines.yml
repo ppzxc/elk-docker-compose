@@ -1,9 +1,9 @@
 - pipeline.id: filebeat
   path.config: "/usr/share/logstash/config/pipelines/host-filebeat.conf"
-#- pipeline.id: metricbeat
-#  path.config: "/usr/share/logstash/config/pipelines/host-metricbeat.conf"
-#- pipeline.id: heartbeat
-#  path.config: "/usr/share/logstash/config/pipelines/host-heartbeat.conf"
+- pipeline.id: metricbeat
+  path.config: "/usr/share/logstash/config/pipelines/host-metricbeat.conf"
+- pipeline.id: heartbeat
+  path.config: "/usr/share/logstash/config/pipelines/host-heartbeat.conf"
 #- pipeline.id: packetbeat
 #  path.config: "/usr/share/logstash/config/pipelines/host-packetbeat.conf"
 

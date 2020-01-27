@@ -22,6 +22,7 @@ services:
       - "--entrypoints.entrypoint-https.address=:443"
       - "--entrypoints.entrypoint-traefik.address=:8578"
       - "--entrypoints.entrypoint-redis.address=:8579"
+
       - "--entrypoints.entrypoint-mt01.address=:12001"
       - "--entrypoints.entrypoint-mt02.address=:12002"
       - "--entrypoints.entrypoint-mt03.address=:12003"
@@ -31,6 +32,7 @@ services:
       - "--entrypoints.entrypoint-data02.address=:12007"
       - "--entrypoints.entrypoint-data03.address=:12008"
       - "--entrypoints.entrypoint-ing01.address=:12009"
+      - "--entrypoints.entrypoint-idx.address=:9600"
 
       - "--certificatesresolvers.nanoit-cert.acme.httpchallenge=true"
       - "--certificatesresolvers.nanoit-cert.acme.httpchallenge.entrypoint=entrypoint-http"
@@ -122,7 +124,7 @@ services:
       - elastic-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.router-mt01.rule=Host(`172.18.0.60`)"
+      - "traefik.http.routers.router-mt01.rule=HostRegexp(`{any:.*}`)"
       - "traefik.http.routers.router-mt01.entrypoints=entrypoint-mt01"
       - "traefik.http.routers.router-mt01.service=frontend-mt01@docker"
       - "traefik.http.services.frontend-mt01.loadbalancer.server.port=9200"
@@ -164,7 +166,7 @@ services:
       - elastic-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.router-mt01.rule=Host(`172.18.0.60`)"
+      - "traefik.http.routers.router-mt02.rule=HostRegexp(`{any:.*}`)"
       - "traefik.http.routers.router-mt02.entrypoints=entrypoint-mt02"
       - "traefik.http.routers.router-mt02.service=frontend-mt02@docker"
       - "traefik.http.services.frontend-mt02.loadbalancer.server.port=9200"
@@ -204,7 +206,7 @@ services:
       - elastic-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.router-mt01.rule=Host(`172.18.0.60`)"
+      - "traefik.http.routers.router-mt03.rule=HostRegexp(`{any:.*}`)"
       - "traefik.http.routers.router-mt03.entrypoints=entrypoint-mt03"
       - "traefik.http.routers.router-mt03.service=frontend-mt03@docker"
       - "traefik.http.services.frontend-mt03.loadbalancer.server.port=9200"
@@ -242,6 +244,12 @@ services:
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
     networks:
       - elastic-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.router-cdn01.rule=HostRegexp(`{any:.*}`)"
+      - "traefik.http.routers.router-cdn01.entrypoints=entrypoint-cdn01"
+      - "traefik.http.routers.router-cdn01.service=frontend-cdn01@docker"
+      - "traefik.http.services.frontend-cdn01.loadbalancer.server.port=9200"
 
   es-cdn02:
     build: ./elasticsearch
@@ -276,6 +284,12 @@ services:
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
     networks:
       - elastic-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.router-cdn02.rule=HostRegexp(`{any:.*}`)"
+      - "traefik.http.routers.router-cdn02.entrypoints=entrypoint-cdn02"
+      - "traefik.http.routers.router-cdn02.service=frontend-cdn02@docker"
+      - "traefik.http.services.frontend-cdn02.loadbalancer.server.port=9200"
 
   es-data01:
     build: ./elasticsearch
@@ -310,6 +324,12 @@ services:
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
     networks:
       - elastic-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.router-data01.rule=HostRegexp(`{any:.*}`)"
+      - "traefik.http.routers.router-data01.entrypoints=entrypoint-data01"
+      - "traefik.http.routers.router-data01.service=frontend-data01@docker"
+      - "traefik.http.services.frontend-data01.loadbalancer.server.port=9200"
 
   es-data02:
     build: ./elasticsearch
@@ -344,6 +364,12 @@ services:
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
     networks:
       - elastic-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.router-data02.rule=HostRegexp(`{any:.*}`)"
+      - "traefik.http.routers.router-data02.entrypoints=entrypoint-data02"
+      - "traefik.http.routers.router-data02.service=frontend-data02@docker"
+      - "traefik.http.services.frontend-data02.loadbalancer.server.port=9200"
 
   es-data03:
     build: ./elasticsearch
@@ -378,6 +404,12 @@ services:
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
     networks:
       - elastic-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.router-data03.rule=HostRegexp(`{any:.*}`)"
+      - "traefik.http.routers.router-data03.entrypoints=entrypoint-data03"
+      - "traefik.http.routers.router-data03.service=frontend-data03@docker"
+      - "traefik.http.services.frontend-data03.loadbalancer.server.port=9200"
 
   es-ing01:
     build: ./elasticsearch
@@ -412,6 +444,12 @@ services:
       - ./elasticsearch/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
     networks:
       - elastic-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.router-ing01.rule=HostRegexp(`{any:.*}`)"
+      - "traefik.http.routers.router-ing01.entrypoints=entrypoint-ing01"
+      - "traefik.http.routers.router-ing01.service=frontend-ing01@docker"
+      - "traefik.http.services.frontend-ing01.loadbalancer.server.port=9200"
 
   es-kib:
     build: ./kibana
@@ -456,6 +494,12 @@ services:
       - elastic-network
     restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03', 'es-kib']
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.router-idx.rule=HostRegexp(`{any:.*}`)"
+      - "traefik.http.routers.router-idx.entrypoints=entrypoint-idx"
+      - "traefik.http.routers.router-idx.service=frontend-idx@docker"
+      - "traefik.http.services.frontend-idx.loadbalancer.server.port=9600"
 
   es-mtb:
     image: docker.elastic.co/beats/metricbeat:7.3.2

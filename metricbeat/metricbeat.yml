@@ -66,26 +66,26 @@ metricbeat.modules:
   #diskio.include_devices: []
 
 #--------------------------------- Beat Module ---------------------------------
-#- module: beat
-#  metricsets:
-#    - stats
-#    - state
-#  period: 10s
-#  hosts: ["http://localhost:5066"]
+- module: beat
+  metricsets:
+    - stats
+    - state
+  period: 10s
+  hosts: ["http://localhost:5066"]
   
-#- module: beat
-#  metricsets:
-#    - stats
-#    - state
-#  period: 10s
-#  hosts: ["http://localhost:5067"]
+- module: beat
+  metricsets:
+    - stats
+    - state
+  period: 10s
+  hosts: ["http://localhost:5067"]
   
-#- module: beat
-#  metricsets:
-#    - stats
-#    - state
-#  period: 10s
-#  hosts: ["http://localhost:5068"]
+- module: beat
+  metricsets:
+    - stats
+    - state
+  period: 10s
+  hosts: ["http://localhost:5068"]
   
 #- module: beat
 #  metricsets:
@@ -130,7 +130,7 @@ metricbeat.modules:
     - shard
     #- ml_job
   period: 10s
-  hosts: ["http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200"]
+  hosts: ["http://172.18.0.60:12001","http://172.18.0.60:12002","http://172.18.0.60:12003","http://172.18.0.60:12004","http://172.18.0.60:12005","http://172.18.0.60:12006","http://172.18.0.60:12007","http://172.18.0.60:12008","http://172.18.0.60:12009"]
   #username: "elastic"
   #password: "changeme"
   #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
@@ -174,20 +174,20 @@ metricbeat.modules:
   #      key: "value"
 
 #-------------------------------- Kibana Module --------------------------------
-#- module: kibana
-  #metricsets: ["status"]
-  #period: 10s
-  #hosts: ["172.18.0.9:5601"]
-  #basepath: "/kibana"
-  #enabled: true
+- module: kibana
+  metricsets: ["status"]
+  period: 10s
+  hosts: ["localhost:443"]
+  #basepath: "/"
+  enabled: true
   #xpack.enabled: false
 
 #------------------------------- Logstash Module -------------------------------
-#- module: logstash
-  #metricsets: ["node", "node_stats"]
-  #enabled: true
-  #period: 10s
-  #hosts: ["172.18.0.10:9600"]
+- module: logstash
+  metricsets: ["node", "node_stats"]
+  enabled: true
+  period: 10s
+  hosts: ["172.18.0.60:9600"]
 
 #-------------------------------- MySQL Module --------------------------------
 #- module: mysql
@@ -245,10 +245,10 @@ metricbeat.modules:
   password: Y&hZ&lgooHaW
 
 #------------------------------- Traefik Module -------------------------------
-#- module: traefik
-  #metricsets: ["health"]
-  #period: 10s
-  #hosts: ["172.18.0.60:8578"]
+- module: traefik
+  metricsets: ["health"]
+  period: 10s
+  hosts: ["localhost:8578"]
 
 #================================ General ======================================
 name: LOG-MONITORING-SERVER
@@ -413,7 +413,7 @@ output.redis:
   codec.json:
     pretty: true
     #escape_html: false
-  hosts: ["172.18.0.12:6379"]
+  hosts: ["172.18.0.60:8579"]
   key: metricbeat
   password: Y&hZ&lgooHaW
   db: 0
