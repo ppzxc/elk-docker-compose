@@ -1,91 +1,107 @@
-#============================  Config Reloading ===============================
-metricbeat.config.modules:
-  path: ${path.config}/conf.d/*.yml
-  reload.period: 10s
-  reload.enabled: false
-metricbeat.max_start_delay: 10s
-
 #============================== Autodiscover ===================================
-#metricbeat.autodiscover:
-#  providers:
-#    - type: docker
-#      templates:
-#        - condition:
-#            equals.docker.container.image: etcd
-#          config:
-#            - module: etcd
-#              metricsets: ["leader", "self", "store"]
-#              period: 10s
-#              hosts: ["${host}:2379"]
+metricbeat.autodiscover:
+  providers:
+    - type: docker
+      templates:
+        - condition:
+            contains:
+              docker.container.image: "elasticsearch"
+          config:
+            - module: elasticsearch
+              metricsets: ["node", "node_stats", "index", "index_recovery", "index_summary", "shard"]
+              period: 10s
+              hosts: ["${data.host}:9200"]
+    - type: docker
+      templates:
+        - condition:
+            contains:
+              docker.container.image: "beats"
+          config:
+            - module: beats
+              metricsets: ["stats", "state"]
+              period: 10s
+              hosts: ["${data.host}:5066"]
+    - type: docker
+      templates:
+        - condition:
+            contains:
+              docker.container.image: "kibana"
+          config:
+            - module: kibana
+              metricsets: ["status"]
+              period: 10s
+              hosts: ["${data.host}:5601"]
+              enabled: true
+    - type: docker
+      templates:
+        - condition:
+            contains:
+              docker.container.image: "logstash"
+          config:
+            - module: logstash
+              metricsets: ["node", "node_stats"]
+              period: 10s
+              hosts: ["${data.host}:9600"]
+              enabled: true
 
+              #      templates:
+              #        - condition:
+              #            contains.docker.container.name: es-mtb01
+              #          config:
+              #            - module: beats
+              #              metricsets: ["stats", "state"]
+              #              period: 10s
+              #              hosts: ["${host}:5066"]
+              #      templates:
+              #        - condition:
+              #            contains.docker.container.name: es-mtb02
+              #          config:
+              #            - module: beats
+              #              metricsets: ["stats", "state"]
+              #              period: 10s
+              #              hosts: ["${host}:5066"]
+              #      templates:
+              #        - condition:
+              #            contains.docker.container.name: es-ftb
+              #          config:
+              #            - module: beats
+              #              metricsets: ["stats", "state"]
+              #              period: 10s
+              #              hosts: ["${host}:5066"]
+              #      templates:
+              #        - condition:
+              #            equals.docker.container.name: es-htb
+              #          config:
+              #            - module: beats
+              #              metricsets: ["stats", "state"]
+              #              period: 10s
+              #              hosts: ["${host}:5066"]
 #=========================== Timeseries instance ===============================
 #timeseries.enabled: false
 
 #==========================  Modules configuration =============================
-metricbeat.modules:
-
-#-------------------------------- System Module --------------------------------
-- module: system
-  metricsets:
-    - cpu             # CPU usage
-    - load            # CPU load averages
-    - memory          # Memory usage
-    - network         # Network IO
-    - process         # Per process metrics
-    - process_summary # Process summary
-    - uptime          # System Uptime
-    - socket_summary  # Socket summary
-    - core           # Per CPU core usage
-    - diskio         # Disk IO
-    - filesystem     # File system usage for each mountpoint
-    - fsstat         # File system summary metrics
-    #- raid           # Raid
-    - socket         # Sockets and connection info (linux only)
-  enabled: true
-  period: 10s
-  processes: ['.*']
-
-  cpu.metrics:  ["percentages"]  # The other available options are normalized_percentages and ticks.
-  core.metrics: ["percentages"]  # The other available option is ticks.
-
-  #filesystem.ignore_types: []
-
-  process.include_top_n:
-    enabled: true
-    by_cpu: 20
-    by_memory: 20
-
-  #process.cmdline.cache.enabled: true
-  process.cgroups.enabled: true
-  #process.env.whitelist: []
-  #process.include_cpu_ticks: false
-  #raid.mount_point: '/'
-  #socket.reverse_lookup.enabled: false
-  #socket.reverse_lookup.success_ttl: 60s
-  #socket.reverse_lookup.failure_ttl: 60s
-  #diskio.include_devices: []
-
+#metricbeat.modules:
 #--------------------------------- Beat Module ---------------------------------
-- module: beat
-  metricsets:
-    - stats
-    - state
-  period: 10s
-  hosts: ["http://localhost:5066"]
+#- module: beat
+#  metricsets:
+#    - stats
+#    - state
+#  period: 10s
+#  hosts: ["es-htb:5066"]
   
-- module: beat
-  metricsets:
-    - stats
-    - state
-  period: 10s
-  hosts: ["http://localhost:5067"]
+#- module: beat
+#  metricsets:
+#    - stats
+#    - state
+#  period: 10s
+#  hosts: ["es-ftb:5066"]
   
-- module: beat
-  metricsets:
-    - stats
-    - state
-  period: 10s
-  hosts: ["http://localhost:5068"]
+#- module: beat
+#  metricsets:
+#    - stats
+#    - state
+#  period: 10s
+#  hosts: ["es-mtb02:5066"]
   
 #- module: beat
 #  metricsets:
@@ -97,6 +113,7 @@ metricbeat.modules:
   #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
   #xpack.enabled: false
 
+metricbeat.modules:
 #-------------------------------- Docker Module --------------------------------
 - module: docker
   metricsets:
@@ -112,7 +129,7 @@ metricbeat.modules:
   hosts: ["unix:///var/run/docker.sock"]
   period: 10s
   enabled: true
-  labels.dedot: true
+  #labels.dedot: true
   #cpu.cores: true
   #ssl:
     #certificate_authority: "/etc/pki/root/ca.pem"
@@ -120,17 +137,18 @@ metricbeat.modules:
     #key:                   "/etc/pki/client/cert.key"
 
 #---------------------------- Elasticsearch Module ----------------------------
-- module: elasticsearch
-  metricsets:
-    - node
-    - node_stats
-    - index
-    - index_recovery
-    - index_summary
-    - shard
+#- module: elasticsearch
+#  metricsets:
+#    - node
+#    - node_stats
+#    - index
+#    - index_recovery
+#    - index_summary
+#    - shard
     #- ml_job
-  period: 10s
-  hosts: ["http://172.18.0.60:12001","http://172.18.0.60:12002","http://172.18.0.60:12003","http://172.18.0.60:12004","http://172.18.0.60:12005","http://172.18.0.60:12006","http://172.18.0.60:12007","http://172.18.0.60:12008","http://172.18.0.60:12009"]
+#  period: 10s
+#  hosts: '["es-mt01:9200","es-mt02:9200","es-mt03:9200","es-cdn01:9200","es-cdn02:9200","es-data01:9200","es-data02:9200","es-data03:9200","es-ing01:9200"]'
+  #hosts: ["http://es","http://172.18.0.60:12002","http://172.18.0.60:12003","http://172.18.0.60:12004","http://172.18.0.60:12005","http://172.18.0.60:12006","http://172.18.0.60:12007","http://172.18.0.60:12008","http://172.18.0.60:12009"]
   #username: "elastic"
   #password: "changeme"
   #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
@@ -174,20 +192,20 @@ metricbeat.modules:
   #      key: "value"
 
 #-------------------------------- Kibana Module --------------------------------
-- module: kibana
-  metricsets: ["status"]
-  period: 10s
-  hosts: ["localhost:443"]
+#- module: kibana
+#  metricsets: ["status"]
+#  period: 10s
+#  hosts: ["es-kib:5601"]
   #basepath: "/"
-  enabled: true
+  #enabled: true
   #xpack.enabled: false
 
 #------------------------------- Logstash Module -------------------------------
-- module: logstash
-  metricsets: ["node", "node_stats"]
-  enabled: true
-  period: 10s
-  hosts: ["172.18.0.60:9600"]
+#- module: logstash
+#  metricsets: ["node", "node_stats"]
+#  enabled: true
+#  period: 10s
+#  hosts: ["es-idx:9600"]
 
 #-------------------------------- MySQL Module --------------------------------
 #- module: mysql
@@ -233,7 +251,7 @@ metricbeat.modules:
   metricsets: ["info", "keyspace"]
   enabled: true
   period: 10s
-  hosts: ["172.18.0.60:8579"]
+  hosts: ["es-redis:6379"]
   timeout: 1s
   #fields:
   #  datacenter: west
@@ -248,7 +266,7 @@ metricbeat.modules:
 - module: traefik
   metricsets: ["health"]
   period: 10s
-  hosts: ["localhost:8578"]
+  hosts: ["172.18.0.60"]
 
 #================================ General ======================================
 name: LOG-MONITORING-SERVER
@@ -279,55 +297,55 @@ name: LOG-MONITORING-SERVER
 #max_procs:
 
 #================================ Processors ===================================
-processors:
-- include_fields:
-    fields: ["cpu"]
-#- drop_fields:
-#    fields: ["cpu.user", "cpu.system"]
-
 #processors:
-#- drop_event:
-#    when:
-#       equals:
-#           http.code: 200
+#- include_fields:
+#    fields: ["cpu"]
+##- drop_fields:
+##    fields: ["cpu.user", "cpu.system"]
+#
+##processors:
+##- drop_event:
+##    when:
+##       equals:
+##           http.code: 200
+##processors:
+##- rename:
+##    fields:
+##       - from: "a"
+##         to: "b"
+##processors:
+##- dissect:
+##    tokenizer: "%{key1} - %{key2}"
+##    field: "message"
+##    target_prefix: "dissect"
+##processors:
+##- add_cloud_metadata: ~
+##processors:
+##- add_locale:
+##    format: offset
 #processors:
-#- rename:
-#    fields:
-#       - from: "a"
-#         to: "b"
+#- add_docker_metadata:
+#    host: "unix:///var/run/docker.sock"
+#    match_fields: ["system.process.cgroup.id"]
+#    match_pids: ["process.pid", "process.ppid"]
+#    match_source: true
+#    match_source_index: 4
+##    match_short_id: false
+##    cleanup_timeout: 60
+##    labels.dedot: false
+##    #ssl:
+##    #  certificate_authority: "/etc/pki/root/ca.pem"
+##    #  certificate:           "/etc/pki/client/cert.pem"
+##    #  key:                   "/etc/pki/client/cert.key"
+##processors:
+##- add_docker_metadata: ~
+##processors:
+##- add_host_metadata:
+##   netinfo.enabled: false
 #processors:
-#- dissect:
-#    tokenizer: "%{key1} - %{key2}"
-#    field: "message"
-#    target_prefix: "dissect"
-#processors:
-#- add_cloud_metadata: ~
-#processors:
-#- add_locale:
-#    format: offset
-processors:
-- add_docker_metadata:
-    host: "unix:///var/run/docker.sock"
-    match_fields: ["system.process.cgroup.id"]
-    match_pids: ["process.pid", "process.ppid"]
-    match_source: true
-    match_source_index: 4
-#    match_short_id: false
-#    cleanup_timeout: 60
-#    labels.dedot: false
-#    #ssl:
-#    #  certificate_authority: "/etc/pki/root/ca.pem"
-#    #  certificate:           "/etc/pki/client/cert.pem"
-#    #  key:                   "/etc/pki/client/cert.key"
-#processors:
-#- add_docker_metadata: ~
-#processors:
-#- add_host_metadata:
-#   netinfo.enabled: false
-processors:
-- add_process_metadata:
-    match_pids: ["system.process.ppid"]
-    target: system.process.parent
+#- add_process_metadata:
+#    match_pids: ["system.process.ppid"]
+#    target: system.process.parent
 #processors:
 #- decode_json_fields:
 #    fields: ["field1", "field2", ...]
@@ -370,50 +388,13 @@ processors:
 #    ignore_missing: true
 
 #================================ Outputs ======================================
-#-------------------------- Elasticsearch output -------------------------------
-#output.elasticsearch:
-  #enabled: true
-  #hosts: ["172.18.0.2:9200"]
-  #hosts: '["http://172.18.0.2:9200","http://172.18.0.3:9200","http://172.18.0.4:9200"]'
-  #compression_level: 0
-  #escape_html: false
-  #protocol: "https"
-  #username: "elastic"
-  #password: "changeme"
-  #parameters:
-    #param1: value1
-    #param2: value2
-  #worker: 1
-  #index: "metricbeat-%{[agent.version]}-%{+yyyy.MM.dd}"
-  #pipeline: ""
-  #path: "/elasticsearch"
-  #headers:
-  #  X-My-Header: Contents of the header
-  #proxy_url: http://proxy:3128
-  #proxy_disable: false
-  #max_retries: 3
-  #bulk_max_size: 50
-  #backoff.init: 1s
-  #backoff.max: 60s
-  #timeout: 90
-  #ssl.enabled: true
-  #ssl.verification_mode: full
-  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
-  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
-  #ssl.certificate: "/etc/pki/client/cert.pem"
-  #ssl.key: "/etc/pki/client/cert.key"
-  #ssl.key_passphrase: ''
-  #ssl.cipher_suites: []
-  #ssl.curve_types: []
-  #ssl.renegotiation: never
-
 #------------------------------- Redis output ----------------------------------
 output.redis:
   enabled: true
   codec.json:
     pretty: true
     #escape_html: false
-  hosts: ["172.18.0.60:8579"]
+  hosts: ["es-redis:6379"]
   key: metricbeat
   password: Y&hZ&lgooHaW
   db: 0
@@ -437,21 +418,6 @@ output.redis:
   #ssl.cipher_suites: []
   #ssl.curve_types: []
   #ssl.renegotiation: never
-
-#----------------------------- Console output ---------------------------------
-#output.console:
-  #enabled: true
-  #codec.json:
-    #pretty: false
-    #escape_html: false
-#================================= Paths ======================================
-#path.home:
-#path.config: ${path.home}
-#path.data: ${path.home}/data
-#path.logs: ${path.home}/logs
-
-#================================ Keystore ==========================================
-#keystore.path: "${path.config}/beats.keystore"
 
 #============================== Dashboards =====================================
 #setup.dashboards.enabled: true
@@ -478,30 +444,13 @@ output.redis:
 #setup.template.json.path: "${path.config}/template.json"
 #setup.template.json.name: ""
 #setup.template.overwrite: true
-setup.template.settings:
-  index:
-    number_of_shards: 6
-    codec: best_compression
-    number_of_routing_shards: 30
+#setup.template.settings:
+  #index:
+    #number_of_shards: 6
+    #codec: best_compression
+    #number_of_routing_shards: 30
   #_source:
     #enabled: false
-
-#============================== Kibana =====================================
-#setup.kibana:
-  #host: "172.18.0.9:5601"
-  #protocol: "https"
-  #username: "elastic"
-  #password: "changeme"
-  #path: "/kibana"
-  #ssl.enabled: true
-  #ssl.verification_mode: full
-  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
-  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
-  #ssl.certificate: "/etc/pki/client/cert.pem"
-  #ssl.key: "/etc/pki/client/cert.key"
-  #ssl.key_passphrase: ''
-  #ssl.cipher_suites: []
-  #ssl.curve_types: []
 
 #================================ Logging ======================================
 logging.level: info
@@ -521,49 +470,7 @@ logging.files:
   #interval: 0
 #logging.json: true
 
-
-#============================== Xpack Monitoring ===============================
-#monitoring.enabled: true
-#monitoring.cluster_uuid:
-#monitoring.elasticsearch:
-  #hosts: ["localhost:9200"]
-  #hosts: '["http://172.18.0.2:9200","http://172.18.0.3:9200","http://172.18.0.4:9200"]'
-  #hosts: '["http://es-mt01:9200","http://es-mt02:9200","http://es-mt03:9200","http://es-cdn01:9200","http://es-cdn02:9200","http://es-data01:9200","http://es-data02:9200","http://es-data03:9200","http://es-ing01:9200"]'
-  #compression_level: 0
-  #protocol: "https"
-  #username: "beats_system"
-  #password: "changeme"
-  #parameters:
-    #param1: value1
-    #param2: value2
-  #headers:
-  #  X-My-Header: Contents of the header
-  #proxy_url: http://proxy:3128
-  #max_retries: 3
-  #bulk_max_size: 50
-  #backoff.init: 1s
-  #backoff.max: 60s
-  #timeout: 90
-  #ssl.enabled: true
-  #ssl.verification_mode: full
-  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
-  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
-  #ssl.certificate: "/etc/pki/client/cert.pem"
-  #ssl.key: "/etc/pki/client/cert.key"
-  #ssl.key_passphrase: ''
-  #ssl.cipher_suites: []
-  #ssl.curve_types: []
-  #ssl.renegotiation: never
-  #metrics.period: 10s
-  #state.period: 1m
-
 #================================ HTTP Endpoint ======================================
 http.enabled: true
 http.host: localhost
-http.port: 5067
-
-#============================= Process Security ================================
-#seccomp.enabled: true
-
-#================================= Migration ==================================
-#migration.6_to_7.enabled: false
+http.port: 5066

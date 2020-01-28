@@ -1,0 +1,234 @@
+#==========================  Modules configuration =============================
+metricbeat.modules:
+#-------------------------------- System Module --------------------------------
+- module: system
+  metricsets:
+    - cpu             # CPU usage
+    - load            # CPU load averages
+    - memory          # Memory usage
+    - network         # Network IO
+    - process         # Per process metrics
+    - process_summary # Process summary
+    - uptime          # System Uptime
+    - socket_summary  # Socket summary
+    - core           # Per CPU core usage
+    - diskio         # Disk IO
+    - filesystem     # File system usage for each mountpoint
+    - fsstat         # File system summary metrics
+    #- raid           # Raid
+    - socket         # Sockets and connection info (linux only)
+  enabled: true
+  period: 10s
+  processes: ['.*']
+
+  cpu.metrics:  ["percentages"]  # The other available options are normalized_percentages and ticks.
+  core.metrics: ["percentages"]  # The other available option is ticks.
+
+  #filesystem.ignore_types: []
+
+  process.include_top_n:
+    enabled: true
+    by_cpu: 30
+    by_memory: 30
+
+  #process.cmdline.cache.enabled: true
+  process.cgroups.enabled: true
+  #process.env.whitelist: []
+  #process.include_cpu_ticks: false
+  #raid.mount_point: '/'
+  #socket.reverse_lookup.enabled: false
+  #socket.reverse_lookup.success_ttl: 60s
+  #socket.reverse_lookup.failure_ttl: 60s
+  #diskio.include_devices: []
+
+#--------------------------------- Beat Module ---------------------------------
+- module: beat
+  metricsets:
+    - stats
+    - state
+  period: 10s
+  hosts: ["http://localhost:5066"]
+  
+#- module: beat
+#  metricsets:
+#    - stats
+#    - state
+#  period: 10s
+#  hosts: ["http://localhost:5069"]
+
+#ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+#xpack.enabled: false
+
+#================================ General ======================================
+name: LOG-MONITORING-SERVER
+#tags: ["service-X", "web-tier"]
+#fields:
+#  env: staging
+#fields_under_root: false
+#queue:
+  #mem:
+    #events: 4096
+    #flush.min_events: 2048
+    #flush.timeout: 1s
+  #spool:
+    #file:
+      #path: "${path.data}/spool.dat"
+      #permissions: 0600
+      #size: 100MiB
+      #page_size: 4KiB
+      #prealloc: true
+    #write:
+      #buffer_size: 1MiB
+      #flush.timeout: 1s
+      #flush.events: 16384
+      #codec: cbor
+    #read:
+      #flush.timeout: 0s
+
+#max_procs:
+
+#================================ Processors ===================================
+#processors:
+#- include_fields:
+#    fields: ["cpu"]
+#- drop_fields:
+#    fields: ["cpu.user", "cpu.system"]
+
+#processors:
+#- drop_event:
+#    when:
+#       equals:
+#           http.code: 200
+#processors:
+#- rename:
+#    fields:
+#       - from: "a"
+#         to: "b"
+#processors:
+#- dissect:
+#    tokenizer: "%{key1} - %{key2}"
+#    field: "message"
+#    target_prefix: "dissect"
+#processors:
+#- add_cloud_metadata: ~
+#processors:
+#- add_locale:
+#    format: offset
+#processors:
+#- add_docker_metadata:
+    #host: "unix:///var/run/docker.sock"
+    #match_fields: ["system.process.cgroup.id"]
+    #match_pids: ["process.pid", "process.ppid"]
+    #match_source: true
+    #match_source_index: 4
+#    match_short_id: false
+#    cleanup_timeout: 60
+#    labels.dedot: false
+#    #ssl:
+#    #  certificate_authority: "/etc/pki/root/ca.pem"
+#    #  certificate:           "/etc/pki/client/cert.pem"
+#    #  key:                   "/etc/pki/client/cert.key"
+#processors:
+#- add_docker_metadata: ~
+#processors:
+#- add_host_metadata:
+#   netinfo.enabled: false
+processors:
+- add_process_metadata:
+    match_pids: ["system.process.ppid"]
+    target: system.process.parent
+#processors:
+#- decode_json_fields:
+#    fields: ["field1", "field2", ...]
+#    process_array: false
+#    max_depth: 1
+#    target: ""
+#    overwrite_keys: false
+#processors:
+#- decompress_gzip_field:
+#    from: "field1"
+#    to: "field2"
+#    ignore_missing: false
+#    fail_on_error: true
+#processors:
+#- copy_fields:
+#    fields:
+#        - from: message
+#          to: message_copied
+#    fail_on_error: true
+#    ignore_missing: false
+#processors:
+#- truncate_fields:
+#    fields:
+#      - message
+#    max_bytes: 1024
+#    fail_on_error: false
+#    ignore_missing: true
+#processors:
+#- copy_fields:
+#    fields:
+#        - from: message
+#          to: event.original
+#    fail_on_error: false
+#    ignore_missing: true
+#- truncate_fields:
+#    fields:
+#      - event.original
+#    max_bytes: 1024
+#    fail_on_error: false
+#    ignore_missing: true
+
+#================================ Outputs ======================================
+#------------------------------- Redis output ----------------------------------
+output.redis:
+  enabled: true
+  codec.json:
+    pretty: false
+    #escape_html: false
+  hosts: ["172.18.0.60:8580"]
+  key: metricbeat
+  password: Y&hZ&lgooHaW
+  db: 0
+  datatype: list
+  #worker: 1
+  #loadbalance: true
+  #timeout: 5s
+  #max_retries: 3
+  #backoff.init: 1s
+  #backoff.max: 60s
+  #bulk_max_size: 2048
+  #proxy_url:
+  #proxy_use_local_resolver: false
+  #ssl.enabled: true
+  #ssl.verification_mode: full
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  #ssl.certificate: "/usr/share/metricbeat/ssl/client.crt"
+  #ssl.key: "/usr/share/metricbeat/ssl/client.key"
+  #ssl.key_passphrase: ''
+  #ssl.cipher_suites: []
+  #ssl.curve_types: []
+  #ssl.renegotiation: never
+
+#================================ Logging ======================================
+logging.level: info
+#logging.selectors: ["*"]
+#logging.to_stderr: true
+#logging.to_syslog: true
+#logging.to_eventlog: true
+#logging.metrics.enabled: true
+#logging.metrics.period: 30s
+logging.to_files: true
+logging.files:
+  path: /usr/share/metricbeat/logs
+  name: metricbeat
+  keepfiles: 5
+  permissions: 0644
+  #rotateeverybytes: 10485760 # = 10MB
+  #interval: 0
+#logging.json: true
+
+#================================ HTTP Endpoint ======================================
+http.enabled: true
+http.host: localhost
+http.port: 5066

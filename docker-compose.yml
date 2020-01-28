@@ -6,7 +6,7 @@ services:
     environment:
       - "TZ=Asia/Seoul"
     command:
-      - "--log.level=info"
+      - "--log.level=error"
       - "--log.filepath=/opt/traefik/default.log"
       - "--log.format=json"
       - "--accesslog.filepath=/opt/traefik/access.log"
@@ -17,11 +17,13 @@ services:
       - "--api.debug=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.directory=/traefik/traefik.toml"
 
       - "--entrypoints.entrypoint-http.address=:80"
       - "--entrypoints.entrypoint-https.address=:443"
       - "--entrypoints.entrypoint-traefik.address=:8578"
       - "--entrypoints.entrypoint-redis.address=:8579"
+      - "--entrypoints.entrypoint-inside-redis.address=:8580"
 
       - "--entrypoints.entrypoint-mt01.address=:12001"
       - "--entrypoints.entrypoint-mt02.address=:12002"
@@ -32,7 +34,8 @@ services:
       - "--entrypoints.entrypoint-data02.address=:12007"
       - "--entrypoints.entrypoint-data03.address=:12008"
       - "--entrypoints.entrypoint-ing01.address=:12009"
-      - "--entrypoints.entrypoint-idx.address=:9600"
+      - "--entrypoints.entrypoint-idx.address=:12010"
+      - "--entrypoints.entrypoint-kibana.address=:12011"
 
       - "--certificatesresolvers.nanoit-cert.acme.httpchallenge=true"
       - "--certificatesresolvers.nanoit-cert.acme.httpchallenge.entrypoint=entrypoint-http"
@@ -51,6 +54,7 @@ services:
       - "/home/operation/data/htpasswd/userfile:/userfile"
       - "./letsencrypt:/letsencrypt"
       - "/etc/localtime:/etc/localtime:ro"
+      - "./traefik:/traefik"
 
     networks:
       elastic-network:
@@ -79,6 +83,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /home/operation/data/redis:/data
       - /home/operation/app/elk-docker-compose/redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - /ssl:/usr/local/etc/redis
     networks:
       - elastic-network
     command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
@@ -87,7 +92,13 @@ services:
       - "traefik.tcp.routers.router-redis.rule=HostSNI(`*`)"
       - "traefik.tcp.routers.router-redis.entrypoints=entrypoint-redis"
       - "traefik.tcp.routers.router-redis.service=frontend-redis@docker"
+      - "traefik.tcp.routers.router-redis.tls=true"
       - "traefik.tcp.services.frontend-redis.loadbalancer.server.port=6379"
+
+      - "traefik.tcp.routers.router-inside-redis.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.router-inside-redis.entrypoints=entrypoint-inside-redis"
+      - "traefik.tcp.routers.router-inside-redis.service=frontend-inside-redis@docker"
+      - "traefik.tcp.services.frontend-inside-redis.loadbalancer.server.port=6379"
         
   es-mt01:
     build: ./elasticsearch
@@ -471,6 +482,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=elastic-network"
       - "traefik.http.services.dashboard-kibana.loadbalancer.server.port=5601"
+      - "traefik.http.services.dashboard-inside-kibana.loadbalancer.server.port=5601"
 
       - "traefik.http.routers.secured-kibana.rule=Host(`${HOSTURL}`)"
       - "traefik.http.routers.secured-kibana.entrypoints=entrypoint-https"
@@ -479,6 +491,10 @@ services:
       - "traefik.http.routers.secured-kibana.tls.certresolver=nanoit-cert"
       - "traefik.http.routers.secured-kibana.middlewares=basicauth@docker"
       - "traefik.http.middlewares.basicauth.basicauth.usersfile=/userfile"
+
+      - "traefik.http.routers.inside-kibana.rule=Host(`{any:.*}`)"
+      - "traefik.http.routers.inside-kibana.entrypoints=entrypoint-kibana"
+      - "traefik.http.routers.inside-kibana.service=dashboard-inside-kibana@docker"
    
   es-idx:
     image: docker.elastic.co/logstash/logstash:7.3.2
@@ -488,6 +504,7 @@ services:
       - ./logstash/config/:/usr/share/logstash/config/
       - /home/operation/data/elasticsearch/logstash-idx01:/usr/share/logstash/data
       - /home/operation/data/logs/elasticsearch/logstash01:/usr/share/logstash/logs
+      - ./ssl:/usr/share/logstash/ssl
     environment:
       LS_JAVA_OPTS: "-Xmx1024m -Xms1024m"
     networks:
@@ -501,9 +518,11 @@ services:
       - "traefik.http.routers.router-idx.service=frontend-idx@docker"
       - "traefik.http.services.frontend-idx.loadbalancer.server.port=9600"
 
-  es-mtb:
-    image: docker.elastic.co/beats/metricbeat:7.3.2
-    container_name: es-mtb
+  es-mtb01:
+    build: ./host-metricbeat
+    image: custom-metricbeats
+    #image: docker.elastic.co/beats/metricbeat:7.3.2
+    container_name: es-mtb01
     command: ["--strict.perms=false"]
     user: root
     volumes:
@@ -515,7 +534,7 @@ services:
       - /:/hostfs:ro
       - /home/operation/data/logs/elasticsearch/metricbeat01:/usr/share/metricbeat/logs
       - /home/operation/data/elasticsearch/metricbeat01/:/usr/share/metricbeat/data
-      - /home/operation/app/elk-docker-compose/metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+      - /home/operation/app/elk-docker-compose/host-metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
     network_mode: host
     restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
@@ -523,8 +542,35 @@ services:
       - sys_ptrace
       - dac_read_search
 
+  es-mtb02:
+    build: ./container-metricbeat
+    image: custom-metricbeat
+    #image: docker.elastic.co/beats/metricbeat:7.3.2
+    container_name: es-mtb02
+    command: ["--strict.perms=false"]
+    user: root
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /proc:/hostfs/proc:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /:/hostfs:ro
+      - /home/operation/data/logs/elasticsearch/metricbeat02:/usr/share/metricbeat/logs
+      - /home/operation/data/elasticsearch/metricbeat02/:/usr/share/metricbeat/data
+      - /home/operation/app/elk-docker-compose/container-metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+    networks:
+      - elastic-network
+    restart: always
+    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
+    cap_add:
+      - sys_ptrace
+      - dac_read_search
+
   es-htb:
-    image: docker.elastic.co/beats/heartbeat:7.3.2
+    build: ./heartbeat
+    image: custom-heartbeat
+    #image: docker.elastic.co/beats/heartbeat:7.3.2
     container_name: es-htb
     command: ["--strict.perms=false"]
     user: root
@@ -533,12 +579,17 @@ services:
       - ./heartbeat/heartbeat.yml:/usr/share/heartbeat/heartbeat.yml
       - /home/operation/data/elasticsearch/heartbeat01/:/usr/share/heartbeat/data
       - /home/operation/data/logs/elasticsearch/heartbeat01:/usr/share/heartbeat/logs
-    network_mode: host
+      - ./ssl:/usr/share/heartbeat/ssl
+    #network_mode: host
+    networks:
+      - elastic-network
     restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
 
   es-ftb:
-    image: docker.elastic.co/beats/filebeat:7.3.2
+    build: ./filebeat
+    image: custom-filebeats
+    #image: docker.elastic.co/beats/filebeat:7.3.2
     container_name: es-ftb
     command: ["--strict.perms=false"]
     user: root
@@ -554,7 +605,10 @@ services:
       - /home/operation/data/logs/elasticsearch:/usr/share/filebeat/logs/elasticsearch
       - /home/operation/data/logs/traefik:/usr/share/filebeat/logs/traefik
       - /home/operation/data/redis:/usr/share/filebeat/logs/redis
-    network_mode: host
+      - ./ssl:/usr/share/filebeat/ssl
+    #network_mode: host
+    networks:
+      - elastic-network
     restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03', 'es-redis']
 

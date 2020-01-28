@@ -157,14 +157,14 @@ filebeat.modules:
     var.paths: ["/usr/share/filebeat/logs/redis/redis.log"]
   slowlog:
     enabled: true
-    var.hosts: ["172.18.0.60:8579"]
+    var.hosts: ["172.18.0.60:8580"]
     var.password: Y&hZ&lgooHaW
 
 #------------------------------- Traefik Module -------------------------------
 - module: traefik
   access:
     enabled: true
-    var.paths: ["/usr/share/filebeat/logs/traefik/accees.log"]
+    var.paths: ["/usr/share/filebeat/logs/traefik/*.log"]
     #input:
 
 #--------------------------------- Zeek Module ---------------------------------
@@ -235,14 +235,14 @@ filebeat.inputs:
   #enabled: true
 
 #------------------------- Redis slowlog input ---------------------------
-#- type: redis
-  #enabled: false
-  #hosts: ["localhost:6379"]
-  #scan_frequency: 10s
-  #timeout: 1s
-  #network: tcp
-  #maxconn: 10
-  #password: foobared
+- type: redis
+  enabled: true
+  hosts: ["172.18.0.60:8580"]
+  scan_frequency: 10s
+  timeout: 1s
+  network: tcp
+  maxconn: 10
+  password: Y&hZ&lgooHaW
 
 #------------------------------ Udp input --------------------------------
 #- type: udp
@@ -466,8 +466,8 @@ name: LOG-MONITORING-SERVER
 #    #  key:                   "/etc/pki/client/cert.key"
 #processors:
 #- add_docker_metadata: ~
-processors:
-- add_host_metadata:
+#processors:
+#- add_host_metadata:
 #   netinfo.enabled: false
 #processors:
 #- add_process_metadata:
@@ -554,9 +554,9 @@ processors:
 output.redis:
   enabled: true
   codec.json:
-    pretty: true
+    pretty: false
     #escape_html: false
-  hosts: ["172.18.0.60:8579"]
+  hosts: ["172.18.0.60:8580"]
   key: filebeat
   password: Y&hZ&lgooHaW
   db: 0
@@ -573,9 +573,9 @@ output.redis:
   #ssl.enabled: true
   #ssl.verification_mode: full
   #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
-  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
-  #ssl.certificate: "/etc/pki/client/cert.pem"
-  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.certificate_authorities: ["/usr/share/filebeat/ssl/ca.crt"]
+  #ssl.certificate: "/usr/share/filebeat/ssl/client.crt"
+  #ssl.key: "/usr/share/filebeat/ssl/client.key"
   #ssl.key_passphrase: ''
   #ssl.cipher_suites: []
   #ssl.curve_types: []

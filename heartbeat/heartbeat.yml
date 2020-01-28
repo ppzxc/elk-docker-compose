@@ -294,9 +294,9 @@ name: LOG-MONITORING-SERVER
 output.redis:
   enabled: true
   codec.json:
-    pretty: true
+    pretty: false
     #escape_html: false
-  hosts: ["172.18.0.60:8579"]
+  hosts: ["172.18.0.60:8580"]
   key: heartbeat
   password: Y&hZ&lgooHaW
   db: 0
@@ -314,8 +314,8 @@ output.redis:
   #ssl.verification_mode: full
   #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
   #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
-  #ssl.certificate: "/etc/pki/client/cert.pem"
-  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.certificate: "/usr/share/heartbeat/ssl/client.crt"
+  #ssl.key: "/usr/share/heartbeat/ssl/client.key"
   #ssl.key_passphrase: ''
   #ssl.cipher_suites: []
   #ssl.curve_types: []
@@ -445,7 +445,7 @@ logging.files:
 #================================ HTTP Endpoint ======================================
 http.enabled: true
 http.host: localhost
-http.port: 5068
+http.port: 5066
 
 #============================= Process Security ================================
 #seccomp.enabled: true

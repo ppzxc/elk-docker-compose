@@ -1,0 +1,7 @@
+#[tls.options.default.clientAuth]
+#  certFile = ["/traefik/ssl/root-ca.pem"]
+#  clientAuthType = "RequireAndVerifyClientCert"
+
+[[tls.certificates]]
+  certFile = "/traefik/ssl/ca.crt"
+  keyFile = "/traefik/ssl/ca.key"

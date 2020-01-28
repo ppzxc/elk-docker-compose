@@ -1,0 +1,7 @@
+*.pem
+*.key
+*.csr
+*.srl
+*.crt
+.env
+acme.json
