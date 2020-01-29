@@ -481,8 +481,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=elastic-network"
-      - "traefik.http.services.dashboard-kibana.loadbalancer.server.port=5601"
-      - "traefik.http.services.dashboard-inside-kibana.loadbalancer.server.port=5601"
 
       - "traefik.http.routers.secured-kibana.rule=Host(`${HOSTURL}`)"
       - "traefik.http.routers.secured-kibana.entrypoints=entrypoint-https"
@@ -491,10 +489,12 @@ services:
       - "traefik.http.routers.secured-kibana.tls.certresolver=nanoit-cert"
       - "traefik.http.routers.secured-kibana.middlewares=basicauth@docker"
       - "traefik.http.middlewares.basicauth.basicauth.usersfile=/userfile"
+      - "traefik.http.services.dashboard-kibana.loadbalancer.server.port=5601"
 
       - "traefik.http.routers.inside-kibana.rule=Host(`{any:.*}`)"
       - "traefik.http.routers.inside-kibana.entrypoints=entrypoint-kibana"
       - "traefik.http.routers.inside-kibana.service=dashboard-inside-kibana@docker"
+      - "traefik.http.services.dashboard-inside-kibana.loadbalancer.server.port=5601"
    
   es-idx:
     image: docker.elastic.co/logstash/logstash:7.3.2

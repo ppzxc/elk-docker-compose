@@ -115,20 +115,20 @@ metricbeat.autodiscover:
 
 metricbeat.modules:
 #-------------------------------- Docker Module --------------------------------
-- module: docker
-  metricsets:
-    - "container"
-    - "cpu"
-    - "diskio"
-    - "event"
-    - "healthcheck"
-    - "info"
+#- module: docker
+  #metricsets:
+    #- "container"
+    #- "cpu"
+    #- "diskio"
+    #- "event"
+    #- "healthcheck"
+    #- "info"
     #- "image"
-    - "memory"
-    - "network"
-  hosts: ["unix:///var/run/docker.sock"]
-  period: 10s
-  enabled: true
+    #- "memory"
+    #- "network"
+  #hosts: ["unix:///var/run/docker.sock"]
+  #period: 10s
+  #enabled: true
   #labels.dedot: true
   #cpu.cores: true
   #ssl:
@@ -263,10 +263,10 @@ metricbeat.modules:
   password: Y&hZ&lgooHaW
 
 #------------------------------- Traefik Module -------------------------------
-- module: traefik
-  metricsets: ["health"]
-  period: 10s
-  hosts: ["172.18.0.60"]
+#- module: traefik
+#  metricsets: ["health"]
+#  period: 10s
+#  hosts: ["https://monitor.nanoit.kr/api:8578"]
 
 #================================ General ======================================
 name: LOG-MONITORING-SERVER

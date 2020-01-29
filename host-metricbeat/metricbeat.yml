@@ -18,10 +18,10 @@ metricbeat.modules:
     #- raid           # Raid
     - socket         # Sockets and connection info (linux only)
   enabled: true
-  period: 10s
+  period: 5s
   processes: ['.*']
 
-  cpu.metrics:  ["percentages"]  # The other available options are normalized_percentages and ticks.
+  cpu.metrics:  ["percentages","normalized_percentages"]  # The other available options are normalized_percentages and ticks.
   core.metrics: ["percentages"]  # The other available option is ticks.
 
   #filesystem.ignore_types: []

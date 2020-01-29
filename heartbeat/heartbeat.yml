@@ -48,20 +48,29 @@ heartbeat.monitors:
     #path:
     #interval: 5s
     
-- type: tcp
+  #- type: tcp
+  #  name: cerebro
+  #  enabled: true
+  #  schedule: '@every 5s'
+  #  hosts: ["172.18.0.60:9000"]
+  #  ipv4: true
+  #  ipv6: true
+  #  mode: any
+
+- type: http
   name: cerebro
   enabled: true
   schedule: '@every 5s'
-  hosts: ["172.18.0.61:9000"]
+  urls: ["http://172.18.0.60:9000"]
   ipv4: true
-  ipv6: true
+  #ipv6: true
   mode: any
 
 - type: http
   name: traefik
   enabled: true
   schedule: '@every 5s'
-  urls: ["http://172.18.0.60:443"]
+  urls: ["http://172.18.0.60:8578"]
   ipv4: true
   #ipv6: true
   mode: any
@@ -70,7 +79,7 @@ heartbeat.monitors:
   name: es-ingest
   enabled: true
   schedule: '@every 5s'
-  urls: ["http://172.18.0.14:9200"]
+  urls: ["http://172.18.0.60:12009"]
   ipv4: true
   #ipv6: true
   mode: any
@@ -79,7 +88,7 @@ heartbeat.monitors:
   name: es-maseters
   enabled: true
   schedule: '@every 5s'
-  urls: ["http://172.18.0.2:9200", "http://172.18.0.3:9200", "http://172.18.0.4:9200"]
+  urls: ["http://172.18.0.60:12001", "http://172.18.0.60:12002", "http://172.18.0.60:12003"]
   ipv4: true
   #ipv6: true
   mode: any
@@ -89,7 +98,16 @@ heartbeat.monitors:
   name: es-coordinate
   enabled: true
   schedule: '@every 5s'
-  urls: ["http://172.18.0.5:9200","http://172.18.0.6:9200"]
+  urls: ["http://172.18.0.60:12004","http://172.18.0.60:12005"]
+  ipv4: true
+  ipv6: true
+  mode: any
+
+- type: http
+  name: es-data
+  enabled: true
+  schedule: '@every 5s'
+  urls: ["http://172.18.0.60:12006","http://172.18.0.60:12007","http://172.18.0.60:12008"]
   ipv4: true
   ipv6: true
   mode: any
@@ -98,7 +116,7 @@ heartbeat.monitors:
   name: es-kib
   enabled: true
   schedule: '@every 5s'
-  urls: ["http://172.18.0.9:5601"]
+  urls: ["http://172.18.0.60:12011"]
   ipv4: true
   #ipv6: true
   mode: any

@@ -4,8 +4,8 @@
   path.config: "/usr/share/logstash/config/pipelines/host-metricbeat.conf"
 - pipeline.id: heartbeat
   path.config: "/usr/share/logstash/config/pipelines/host-heartbeat.conf"
-- pipeline.id: ids
-  path.config: "/usr/share/logstash/config/pipelines/ids-filebeat.conf"
+- pipeline.id: pcap
+  path.config: "/usr/share/logstash/config/pipelines/pcap-packetbeat.conf"
 #- pipeline.id: packetbeat
 #  path.config: "/usr/share/logstash/config/pipelines/host-packetbeat.conf"
 
