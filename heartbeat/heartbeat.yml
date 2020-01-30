@@ -416,7 +416,7 @@ logging.files:
   permissions: 0644
   #interval: 0
   # rotateonstartup: true
-#logging.json: false
+logging.json: true
 
 #----------------------------- Console output ---------------------------------
 #output.console:

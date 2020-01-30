@@ -665,7 +665,7 @@ logging.files:
   keepfiles: 5
   permissions: 0644
   #interval: 0
-#logging.json: false
+logging.json: true
 
 #============================== Xpack Monitoring ===============================
 #monitoring.enabled: true

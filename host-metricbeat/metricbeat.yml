@@ -17,20 +17,18 @@ metricbeat.modules:
     - fsstat         # File system summary metrics
     #- raid           # Raid
     - socket         # Sockets and connection info (linux only)
+    - uptime
   enabled: true
   period: 5s
   processes: ['.*']
 
-  cpu.metrics:  ["percentages","normalized_percentages"]  # The other available options are normalized_percentages and ticks.
-  core.metrics: ["percentages"]  # The other available option is ticks.
-
+  cpu.metrics:  ["percentages","normalized_percentages"]    
+  core.metrics: ["percentages"]  
   #filesystem.ignore_types: []
-
   process.include_top_n:
     enabled: true
     by_cpu: 30
     by_memory: 30
-
   #process.cmdline.cache.enabled: true
   process.cgroups.enabled: true
   #process.env.whitelist: []
@@ -226,7 +224,7 @@ logging.files:
   permissions: 0644
   #rotateeverybytes: 10485760 # = 10MB
   #interval: 0
-#logging.json: true
+logging.json: true
 
 #================================ HTTP Endpoint ======================================
 http.enabled: true

@@ -497,7 +497,9 @@ services:
       - "traefik.http.services.dashboard-inside-kibana.loadbalancer.server.port=5601"
    
   es-idx:
-    image: docker.elastic.co/logstash/logstash:7.3.2
+    #image: docker.elastic.co/logstash/logstash:7.3.2
+    build: ./logstash
+    image: custom-logstash
     container_name: es-idx
     volumes:
       - /etc/localtime:/etc/localtime:ro

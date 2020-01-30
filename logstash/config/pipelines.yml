@@ -5,7 +5,7 @@
 - pipeline.id: heartbeat
   path.config: "/usr/share/logstash/config/pipelines/host-heartbeat.conf"
 - pipeline.id: pcap
-  path.config: "/usr/share/logstash/config/pipelines/pcap-packetbeat.conf"
+  path.config: "/usr/share/logstash/config/pipelines/pcap-filebeat.conf"
 #- pipeline.id: packetbeat
 #  path.config: "/usr/share/logstash/config/pipelines/host-packetbeat.conf"
 
