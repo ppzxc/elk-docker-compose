@@ -1,10 +1,3 @@
-#   pipeline:
-#     batch:
-#       size: 125
-#       delay: 5
-#   pipeline.batch.size: 125
-#   pipeline.batch.delay: 5
-#
 # ------------  Node identity ------------
 node.name: LOG-MONITORING-SERVER
 #
@@ -13,8 +6,8 @@ node.name: LOG-MONITORING-SERVER
 #
 # ------------ Pipeline Settings --------------
 #pipeline.id: main
-#pipeline.workers: 2
-#pipeline.batch.size: 125
+#pipeline.workers: 8
+#pipeline.batch.size: 500
 #pipeline.batch.delay: 50
 #pipeline.unsafe_shutdown: false
 #

@@ -397,7 +397,7 @@ output.redis:
   hosts: ["es-redis:6379"]
   key: metricbeat
   password: Y&hZ&lgooHaW
-  db: 0
+  db: 1
   datatype: list
   #worker: 1
   #loadbalance: true
@@ -471,6 +471,6 @@ logging.files:
 #logging.json: true
 
 #================================ HTTP Endpoint ======================================
-http.enabled: true
-http.host: localhost
-http.port: 5066
+#http.enabled: true
+#http.host: localhost
+#http.port: 5066

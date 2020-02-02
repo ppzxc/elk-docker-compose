@@ -238,7 +238,7 @@ services:
       - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
       - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
     ulimits:
@@ -278,7 +278,7 @@ services:
       - discovery.seed_hosts=es-mt01,es-mt02,es-mt03
       - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
     ulimits:
@@ -522,7 +522,7 @@ services:
 
   es-mtb01:
     build: ./host-metricbeat
-    image: custom-metricbeats
+    image: custom-metricbeat-host
     #image: docker.elastic.co/beats/metricbeat:7.3.2
     container_name: es-mtb01
     command: ["--strict.perms=false"]
@@ -538,6 +538,8 @@ services:
       - /home/operation/data/elasticsearch/metricbeat01/:/usr/share/metricbeat/data
       - /home/operation/app/elk-docker-compose/host-metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
     network_mode: host
+    #networks:
+      #- elastic-network
     restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
     cap_add:
@@ -546,7 +548,7 @@ services:
 
   es-mtb02:
     build: ./container-metricbeat
-    image: custom-metricbeat
+    image: custom-metricbeat-container
     #image: docker.elastic.co/beats/metricbeat:7.3.2
     container_name: es-mtb02
     command: ["--strict.perms=false"]

@@ -317,7 +317,7 @@ output.redis:
   hosts: ["172.18.0.60:8580"]
   key: heartbeat
   password: Y&hZ&lgooHaW
-  db: 0
+  db: 1
   datatype: list
   #worker: 1
   #loadbalance: true
@@ -461,9 +461,9 @@ logging.json: true
   #state.period: 1m
 
 #================================ HTTP Endpoint ======================================
-http.enabled: true
-http.host: localhost
-http.port: 5066
+#http.enabled: true
+#http.host: localhost
+#http.port: 5066
 
 #============================= Process Security ================================
 #seccomp.enabled: true

@@ -65,18 +65,18 @@ filebeat.modules:
       #- /usr/share/filebeat/logs/elasticsearch/data02/gc.log
       #- /usr/share/filebeat/logs/elasticsearch/data03/gc.log
 
-  audit:
-    enabled: true
-    var.paths:
-      - /usr/share/filebeat/logs/elasticsearch/master01/*_audit.json
-      - /usr/share/filebeat/logs/elasticsearch/master02/*_audit.json
-      - /usr/share/filebeat/logs/elasticsearch/master03/*_audit.json
-      - /usr/share/filebeat/logs/elasticsearch/coordinate01/*_audit.json
-      - /usr/share/filebeat/logs/elasticsearch/coordinate02/*_audit.json
-      - /usr/share/filebeat/logs/elasticsearch/ingest01/*_audit.json
-      - /usr/share/filebeat/logs/elasticsearch/data01/*_audit.json
-      - /usr/share/filebeat/logs/elasticsearch/data02/*_audit.json
-      - /usr/share/filebeat/logs/elasticsearch/data03/*_audit.json
+        #  audit:
+        #    enabled: true
+        #    var.paths:
+        #      - /usr/share/filebeat/logs/elasticsearch/master01/*_audit.json
+        #      - /usr/share/filebeat/logs/elasticsearch/master02/*_audit.json
+        #      - /usr/share/filebeat/logs/elasticsearch/master03/*_audit.json
+        #      - /usr/share/filebeat/logs/elasticsearch/coordinate01/*_audit.json
+        #      - /usr/share/filebeat/logs/elasticsearch/coordinate02/*_audit.json
+        #      - /usr/share/filebeat/logs/elasticsearch/ingest01/*_audit.json
+        #      - /usr/share/filebeat/logs/elasticsearch/data01/*_audit.json
+        #      - /usr/share/filebeat/logs/elasticsearch/data02/*_audit.json
+        #      - /usr/share/filebeat/logs/elasticsearch/data03/*_audit.json
   
 #------------------------------- Haproxy Module -------------------------------
 #- module: haproxy
@@ -100,19 +100,19 @@ filebeat.modules:
     #var.paths:
 
 #-------------------------------- Kibana Module --------------------------------
-- module: kibana
-  log:
-    enabled: true
-    var.paths: ["/usr/share/filebeat/logs/elasticsearch/kibana01/kibana.log"]
+#- module: kibana
+  #log:
+    #enabled: true
+    #var.paths: ["/usr/share/filebeat/logs/elasticsearch/kibana01/kibana.log"]
 
 #------------------------------- Logstash Module -------------------------------
-- module: logstash
-  log:
-    enabled: true
-    var.paths: ["/usr/share/filebeat/logs/elasticsearch/logstash01/logstash-plain.log"]
-  slowlog:
-    enabled: true
-    var.paths: ["/usr/share/filebeat/logs/elasticsearch/logstash01/logstash-slowlog-plain.log"]
+#- module: logstash
+  #log:
+    #enabled: true
+    #var.paths: ["/usr/share/filebeat/logs/elasticsearch/logstash01/logstash-plain.log"]
+  #slowlog:
+    #enabled: true
+    #var.paths: ["/usr/share/filebeat/logs/elasticsearch/logstash01/logstash-slowlog-plain.log"]
 
 #-------------------------------- MySQL Module --------------------------------
 #- module: mysql
@@ -161,10 +161,10 @@ filebeat.modules:
     var.password: Y&hZ&lgooHaW
 
 #------------------------------- Traefik Module -------------------------------
-- module: traefik
-  access:
-    enabled: true
-    var.paths: ["/usr/share/filebeat/logs/traefik/*.log"]
+#- module: traefik
+  #access:
+    #enabled: true
+    #var.paths: ["/usr/share/filebeat/logs/traefik/*.log"]
     #input:
 
 #--------------------------------- Zeek Module ---------------------------------
@@ -190,10 +190,10 @@ filebeat.inputs:
   enabled: true
   paths:
     - /usr/share/filebeat/logs/system/cron*
-    - /usr/share/filebeat/logs/filebeat/*
-    - /usr/share/filebeat/logs/elasticsearch/metricbeat01/*
+    #- /usr/share/filebeat/logs/filebeat/*
+    #- /usr/share/filebeat/logs/elasticsearch/metricbeat01/*
     #- /usr/share/filebeat/logs/elasticsearch/kibana01/*
-    - /usr/share/filebeat/logs/elasticsearch/heartbeat01/*
+    #- /usr/share/filebeat/logs/elasticsearch/heartbeat01/*
     #- c:\programdata\elasticsearch\logs\*
   #encoding: plain
   #exclude_lines: ['^DBG']
@@ -700,9 +700,9 @@ logging.json: true
   #state.period: 1m
 
 #================================ HTTP Endpoint ======================================
-http.enabled: true
-http.host: localhost
-http.port: 5066
+#http.enabled: true
+#http.host: localhost
+#http.port: 5066
 
 #============================= Process Security ================================
 #seccomp.enabled: true

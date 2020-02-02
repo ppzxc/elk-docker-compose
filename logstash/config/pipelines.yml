@@ -1,11 +1,23 @@
 - pipeline.id: filebeat
+  # pipeline.workers: 32
+  #pipeline.batch.size: 500
   path.config: "/usr/share/logstash/config/pipelines/host-filebeat.conf"
+  #- pipeline.id: filebeat2
+  # pipeline.workers: 32
+  #pipeline.batch.size: 500
+  #path.config: "/usr/share/logstash/config/pipelines/host-filebeat2.conf"
 - pipeline.id: metricbeat
+  #pipeline.workers: 16
+  #pipeline.batch.size: 250
   path.config: "/usr/share/logstash/config/pipelines/host-metricbeat.conf"
 - pipeline.id: heartbeat
+  #pipeline.workers: 8
+  #pipeline.batch.size: 500
   path.config: "/usr/share/logstash/config/pipelines/host-heartbeat.conf"
-- pipeline.id: pcap
-  path.config: "/usr/share/logstash/config/pipelines/pcap-filebeat.conf"
+#- pipeline.id: pcap
+#  pipeline.workers: 8
+#  pipeline.batch.size: 500
+#  path.config: "/usr/share/logstash/config/pipelines/pcap-filebeat.conf"
 #- pipeline.id: packetbeat
 #  path.config: "/usr/share/logstash/config/pipelines/host-packetbeat.conf"
 

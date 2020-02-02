@@ -16,7 +16,7 @@ metricbeat.modules:
     - filesystem     # File system usage for each mountpoint
     - fsstat         # File system summary metrics
     #- raid           # Raid
-    - socket         # Sockets and connection info (linux only)
+    #- socket         # Sockets and connection info (linux only)
     - uptime
   enabled: true
   period: 5s
@@ -40,12 +40,12 @@ metricbeat.modules:
   #diskio.include_devices: []
 
 #--------------------------------- Beat Module ---------------------------------
-- module: beat
-  metricsets:
-    - stats
-    - state
-  period: 10s
-  hosts: ["http://localhost:5066"]
+#- module: beat
+#  metricsets:
+#    - stats
+#    - state
+#  period: 10s
+#  hosts: ["http://localhost:5066"]
   
 #- module: beat
 #  metricsets:
@@ -131,10 +131,10 @@ name: LOG-MONITORING-SERVER
 #processors:
 #- add_host_metadata:
 #   netinfo.enabled: false
-processors:
-- add_process_metadata:
-    match_pids: ["system.process.ppid"]
-    target: system.process.parent
+#processors:
+#- add_process_metadata:
+#    match_pids: ["system.process.ppid"]
+#    target: system.process.parent
 #processors:
 #- decode_json_fields:
 #    fields: ["field1", "field2", ...]
@@ -186,7 +186,7 @@ output.redis:
   hosts: ["172.18.0.60:8580"]
   key: metricbeat
   password: Y&hZ&lgooHaW
-  db: 0
+  db: 1
   datatype: list
   #worker: 1
   #loadbalance: true
@@ -207,6 +207,36 @@ output.redis:
   #ssl.cipher_suites: []
   #ssl.curve_types: []
   #ssl.renegotiation: never
+  
+#-------------------------- Elasticsearch output -------------------------------
+#output.elasticsearch:
+  #enabled: true
+  #hosts: ["es-mt01:9200"]
+  #index: "metricbeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+#setup.template.enabled: true
+#setup.template.name: "metricbeat-%{[agent.version]}"
+#setup.template.pattern: "metricbeat-%{[agent.version]}-*"
+#setup.template.fields: "${path.config}/fields.yml"
+#setup.template.settings:
+  #index:
+    #number_of_shards: 6
+    #codec: best_compression
+    #number_of_routing_shards: 30
+#setup.kibana:
+  #host: "es-kib:5601"
+  
+#============================== Dashboards =====================================
+#setup.dashboards.enabled: true
+#setup.dashboards.directory: ${path.home}/kibana
+#setup.dashboards.url:
+#setup.dashboards.file:
+#setup.dashboards.beat: filebeat
+#setup.dashboards.kibana_index: .kibana
+#setup.dashboards.index: filebeat-*
+##setup.dashboards.always_kibana: false
+##setup.dashboards.retry.enabled: false
+##setup.dashboards.retry.interval: 1s
+##setup.dashboards.retry.maximum: 0
 
 #================================ Logging ======================================
 logging.level: info
@@ -227,6 +257,6 @@ logging.files:
 logging.json: true
 
 #================================ HTTP Endpoint ======================================
-http.enabled: true
-http.host: localhost
-http.port: 5066
+#http.enabled: true
+#http.host: localhost
+#http.port: 5066
