@@ -1,5 +1,10 @@
 # Docker Compose For Elastic Search Stack
 
+## Traefik
+- edge router
+
+## curator
+
 ## docker network
 - bridge
 - subnet 172.18.0.0/16
