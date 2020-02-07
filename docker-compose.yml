@@ -497,7 +497,6 @@ services:
       - "traefik.http.services.dashboard-inside-kibana.loadbalancer.server.port=5601"
    
   es-idx:
-    #image: docker.elastic.co/logstash/logstash:7.3.2
     build: ./logstash
     image: custom-logstash
     container_name: es-idx
@@ -523,7 +522,6 @@ services:
   es-mtb01:
     build: ./host-metricbeat
     image: custom-metricbeat-host
-    #image: docker.elastic.co/beats/metricbeat:7.3.2
     container_name: es-mtb01
     command: ["--strict.perms=false"]
     user: root
@@ -538,8 +536,6 @@ services:
       - /home/operation/data/elasticsearch/metricbeat01/:/usr/share/metricbeat/data
       - /home/operation/app/elk-docker-compose/host-metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
     network_mode: host
-    #networks:
-      #- elastic-network
     restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
     cap_add:
@@ -549,7 +545,6 @@ services:
   es-mtb02:
     build: ./container-metricbeat
     image: custom-metricbeat-container
-    #image: docker.elastic.co/beats/metricbeat:7.3.2
     container_name: es-mtb02
     command: ["--strict.perms=false"]
     user: root
@@ -574,7 +569,6 @@ services:
   es-htb:
     build: ./heartbeat
     image: custom-heartbeat
-    #image: docker.elastic.co/beats/heartbeat:7.3.2
     container_name: es-htb
     command: ["--strict.perms=false"]
     user: root
@@ -584,7 +578,6 @@ services:
       - /home/operation/data/elasticsearch/heartbeat01/:/usr/share/heartbeat/data
       - /home/operation/data/logs/elasticsearch/heartbeat01:/usr/share/heartbeat/logs
       - ./ssl:/usr/share/heartbeat/ssl
-    #network_mode: host
     networks:
       - elastic-network
     restart: always
@@ -593,7 +586,6 @@ services:
   es-ftb:
     build: ./filebeat
     image: custom-filebeats
-    #image: docker.elastic.co/beats/filebeat:7.3.2
     container_name: es-ftb
     command: ["--strict.perms=false"]
     user: root
@@ -610,7 +602,6 @@ services:
       - /home/operation/data/logs/traefik:/usr/share/filebeat/logs/traefik
       - /home/operation/data/redis:/usr/share/filebeat/logs/redis
       - ./ssl:/usr/share/filebeat/ssl
-    #network_mode: host
     networks:
       - elastic-network
     restart: always
