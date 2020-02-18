@@ -1,5 +1,8 @@
 # Docker Compose For Elastic Search Stack
 
+## FIX
+- 2020 02 18
+
 ## Traefik
 - edge router
 
