@@ -1,5 +1,8 @@
 # Docker Compose For Elastic Search Stack
 
+## DONE
+- PRODUCTION
+
 ## FIX
 - 2020 02 18
 
