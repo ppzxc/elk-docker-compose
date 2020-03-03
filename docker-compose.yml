@@ -1,4 +1,5 @@
 version: '2.2'
+
 services:
   traefik:
     image: "traefik:v2.1.2"
