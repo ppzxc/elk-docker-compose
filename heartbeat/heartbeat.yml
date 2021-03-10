@@ -6,12 +6,172 @@ heartbeat.config.monitors:
 
 heartbeat.monitors:
 - type: icmp
-  name: Host-Machine
+  name: NANO-IDC-HUB-2 (1.251.44.202)
   enabled: true
   schedule: '*/5 * * * * * *'
-  hosts: ["localhost"]
+  hosts: ["1.251.44.202"]
   ipv4: true
-  ipv6: true
+  ipv6: false
+  mode: any
+  timeout: 16s
+  wait: 1s
+  #tags: ["service-X", "web-tier"]
+  #fields:
+  #  env: staging
+  #fields_under_root: false
+  #watch.poll_file:
+    #path:
+    #interval: 5s
+  #path: /path/to/my/monitors.d/*.yml
+  #reload.enabled: true
+  #reload.period: 1s
+- type: icmp
+  name: NANO-IDC-HUB-1 (1.251.44.201)
+  enabled: true
+  schedule: '*/5 * * * * * *'
+  hosts: ["1.251.44.201"]
+  ipv4: true
+  ipv6: false
+  mode: any
+  timeout: 16s
+  wait: 1s
+  #tags: ["service-X", "web-tier"]
+  #fields:
+  #  env: staging
+  #fields_under_root: false
+  #watch.poll_file:
+    #path:
+    #interval: 5s
+  #path: /path/to/my/monitors.d/*.yml
+  #reload.enabled: true
+  #reload.period: 1s
+- type: icmp
+  name: CISCO-DPX-3850-10G-ROUTING-2 (1.251.43.102)
+  enabled: true
+  schedule: '*/5 * * * * * *'
+  hosts: ["1.251.43.102"]
+  ipv4: true
+  ipv6: false
+  mode: any
+  timeout: 16s
+  wait: 1s
+  #tags: ["service-X", "web-tier"]
+  #fields:
+  #  env: staging
+  #fields_under_root: false
+  #watch.poll_file:
+    #path:
+    #interval: 5s
+  #path: /path/to/my/monitors.d/*.yml
+  #reload.enabled: true
+  #reload.period: 1s
+- type: icmp
+  name: CISCO-DPX-3850-10G-ROUTING-1 (1.251.43.98)
+  enabled: true
+  schedule: '*/5 * * * * * *'
+  hosts: ["1.251.43.98"]
+  ipv4: true
+  ipv6: false
+  mode: any
+  timeout: 16s
+  wait: 1s
+  #tags: ["service-X", "web-tier"]
+  #fields:
+  #  env: staging
+  #fields_under_root: false
+  #watch.poll_file:
+    #path:
+    #interval: 5s
+  #path: /path/to/my/monitors.d/*.yml
+  #reload.enabled: true
+  #reload.period: 1s
+- type: icmp
+  name: CISCO-DPX-3850 (218.234.206.1)
+  enabled: true
+  schedule: '*/5 * * * * * *'
+  hosts: ["218.234.206.1"]
+  ipv4: true
+  ipv6: false
+  mode: any
+  timeout: 16s
+  wait: 1s
+  #tags: ["service-X", "web-tier"]
+  #fields:
+  #  env: staging
+  #fields_under_root: false
+  #watch.poll_file:
+    #path:
+    #interval: 5s
+  #path: /path/to/my/monitors.d/*.yml
+  #reload.enabled: true
+  #reload.period: 1s
+- type: icmp
+  name: CISCO-3560G-SMS-1-2 (1.251.43.62)
+  enabled: true
+  schedule: '*/5 * * * * * *'
+  hosts: ["1.251.43.62"]
+  ipv4: true
+  ipv6: false
+  mode: any
+  timeout: 16s
+  wait: 1s
+  #tags: ["service-X", "web-tier"]
+  #fields:
+  #  env: staging
+  #fields_under_root: false
+  #watch.poll_file:
+    #path:
+    #interval: 5s
+  #path: /path/to/my/monitors.d/*.yml
+  #reload.enabled: true
+  #reload.period: 1s
+- type: icmp
+  name: CISCO-2960XR-2 (211.210.44.186)
+  enabled: true
+  schedule: '*/5 * * * * * *'
+  hosts: ["211.210.44.186"]
+  ipv4: true
+  ipv6: false
+  mode: any
+  timeout: 16s
+  wait: 1s
+  #tags: ["service-X", "web-tier"]
+  #fields:
+  #  env: staging
+  #fields_under_root: false
+  #watch.poll_file:
+    #path:
+    #interval: 5s
+  #path: /path/to/my/monitors.d/*.yml
+  #reload.enabled: true
+  #reload.period: 1s
+- type: icmp
+  name: CISCO-2960XR-1 (211.210.44.182)
+  enabled: true
+  schedule: '*/5 * * * * * *'
+  hosts: ["211.210.44.182"]
+  ipv4: true
+  ipv6: false
+  mode: any
+  timeout: 16s
+  wait: 1s
+  #tags: ["service-X", "web-tier"]
+  #fields:
+  #  env: staging
+  #fields_under_root: false
+  #watch.poll_file:
+    #path:
+    #interval: 5s
+  #path: /path/to/my/monitors.d/*.yml
+  #reload.enabled: true
+  #reload.period: 1s
+- type: icmp
+  name: DOCKER-SWARM-CLUSTER
+  enabled: true
+  schedule: '*/5 * * * * * *'
+  hosts: ["39.116.31.187", "39.116.31.188"]
+  ipv4: true
+  ipv6: false
   mode: any
   timeout: 16s
   wait: 1s
@@ -57,69 +217,69 @@ heartbeat.monitors:
   #  ipv6: true
   #  mode: any
 
-- type: http
-  name: cerebro
-  enabled: true
-  schedule: '@every 5s'
-  urls: ["http://172.18.0.60:9000"]
-  ipv4: true
-  #ipv6: true
-  mode: any
+#- type: http
+#  name: cerebro
+#  enabled: true
+#  schedule: '@every 5s'
+#  urls: ["http://172.18.0.60:9000"]
+#  ipv4: true
+#  ipv6: true
+#  mode: any
 
-- type: http
-  name: traefik
-  enabled: true
-  schedule: '@every 5s'
-  urls: ["http://172.18.0.60:8578"]
-  ipv4: true
-  #ipv6: true
-  mode: any
+#- type: http
+#  name: traefik
+#  enabled: true
+#  schedule: '@every 5s'
+#  urls: ["http://172.18.0.60:8578"]
+#  ipv4: true
+#  #ipv6: true
+#  mode: any
     
-- type: http
-  name: es-ingest
-  enabled: true
-  schedule: '@every 5s'
-  urls: ["http://172.18.0.60:12009"]
-  ipv4: true
-  #ipv6: true
-  mode: any
-
-- type: http
-  name: es-maseters
-  enabled: true
-  schedule: '@every 5s'
-  urls: ["http://172.18.0.60:12001", "http://172.18.0.60:12002", "http://172.18.0.60:12003"]
-  ipv4: true
-  #ipv6: true
-  mode: any
-
-
-- type: http
-  name: es-coordinate
-  enabled: true
-  schedule: '@every 5s'
-  urls: ["http://172.18.0.60:12004","http://172.18.0.60:12005"]
-  ipv4: true
-  ipv6: true
-  mode: any
-
-- type: http
-  name: es-data
-  enabled: true
-  schedule: '@every 5s'
-  urls: ["http://172.18.0.60:12006","http://172.18.0.60:12007","http://172.18.0.60:12008"]
-  ipv4: true
-  ipv6: true
-  mode: any
-
-- type: http
-  name: es-kib
-  enabled: true
-  schedule: '@every 5s'
-  urls: ["http://172.18.0.60:12011"]
-  ipv4: true
-  #ipv6: true
-  mode: any
+#- type: http
+#  name: es-ingest
+#  enabled: true
+#  schedule: '@every 5s'
+#  urls: ["http://172.18.0.60:12009"]
+#  ipv4: true
+#  #ipv6: true
+#  mode: any
+#
+#- type: http
+#  name: es-maseters
+#  enabled: true
+#  schedule: '@every 5s'
+#  urls: ["http://172.18.0.60:12001", "http://172.18.0.60:12002", "http://172.18.0.60:12003"]
+#  ipv4: true
+#  #ipv6: true
+#  mode: any
+#
+#
+#- type: http
+#  name: es-coordinate
+#  enabled: true
+#  schedule: '@every 5s'
+#  urls: ["http://172.18.0.60:12004","http://172.18.0.60:12005"]
+#  ipv4: true
+#  ipv6: true
+#  mode: any
+#
+#- type: http
+#  name: es-data
+#  enabled: true
+#  schedule: '@every 5s'
+#  urls: ["http://172.18.0.60:12006","http://172.18.0.60:12007","http://172.18.0.60:12008"]
+#  ipv4: true
+#  ipv6: true
+#  mode: any
+#
+#- type: http
+#  name: es-kib
+#  enabled: true
+#  schedule: '@every 5s'
+#  urls: ["http://172.18.0.60:12011"]
+#  ipv4: true
+#  #ipv6: true
+#  mode: any
   #watch.poll_file:
     #path:
     #interval: 5s

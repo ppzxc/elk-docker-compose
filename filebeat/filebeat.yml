@@ -29,19 +29,19 @@ filebeat.modules:
     #var.paths:
 
 #---------------------------- Elasticsearch Module ----------------------------
-- module: elasticsearch
-  server:
-    enabled: true
-    var.paths: 
-      - /usr/share/filebeat/logs/elasticsearch/master01/*_server.json
-      - /usr/share/filebeat/logs/elasticsearch/master02/*_server.json
-      - /usr/share/filebeat/logs/elasticsearch/master03/*_server.json
-      - /usr/share/filebeat/logs/elasticsearch/coordinate01/*_server.json
-      - /usr/share/filebeat/logs/elasticsearch/coordinate02/*_server.json
-      - /usr/share/filebeat/logs/elasticsearch/ingest01/*_server.json
-      - /usr/share/filebeat/logs/elasticsearch/data01/*_server.json
-      - /usr/share/filebeat/logs/elasticsearch/data02/*_server.json
-      - /usr/share/filebeat/logs/elasticsearch/data03/*_server.json
+#- module: elasticsearch
+#  server:
+#    enabled: true
+#    var.paths: 
+#      - /usr/share/filebeat/logs/elasticsearch/master01/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/master02/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/master03/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/coordinate01/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/coordinate02/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/ingest01/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/data01/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/data02/*_server.json
+#      - /usr/share/filebeat/logs/elasticsearch/data03/*_server.json
 
   #gc:
     #enabled: true
@@ -151,14 +151,14 @@ filebeat.modules:
     #var.paths: ["/var/log/rabbitmq/rabbit@localhost.log*"]
 
 #-------------------------------- Redis Module --------------------------------
-- module: redis
-  log:
-    enabled: true
-    var.paths: ["/usr/share/filebeat/logs/redis/redis.log"]
-  slowlog:
-    enabled: true
-    var.hosts: ["172.18.0.60:8580"]
-    var.password: Y&hZ&lgooHaW
+#- module: redis
+#  log:
+#    enabled: true
+#    var.paths: ["/usr/share/filebeat/logs/redis/redis.log"]
+#  slowlog:
+#    enabled: true
+#    var.hosts: ["172.18.0.60:8580"]
+#    var.password: Y&hZ&lgooHaW
 
 #------------------------------- Traefik Module -------------------------------
 #- module: traefik
@@ -196,7 +196,7 @@ filebeat.inputs:
     #- /usr/share/filebeat/logs/elasticsearch/heartbeat01/*
     #- c:\programdata\elasticsearch\logs\*
   #encoding: plain
-  #exclude_lines: ['^DBG']
+  #exclude_lines: ['ACPI Error*']
   #include_lines: ['^ERR', '^WARN']
   exclude_files: ['.gz$','message*','secure*']
   #fields:
@@ -235,14 +235,14 @@ filebeat.inputs:
   #enabled: true
 
 #------------------------- Redis slowlog input ---------------------------
-- type: redis
-  enabled: true
-  hosts: ["172.18.0.60:8580"]
-  scan_frequency: 10s
-  timeout: 1s
-  network: tcp
-  maxconn: 10
-  password: Y&hZ&lgooHaW
+#- type: redis
+#  enabled: true
+#  hosts: ["172.18.0.60:8580"]
+#  scan_frequency: 10s
+#  timeout: 1s
+#  network: tcp
+#  maxconn: 10
+#  password: Y&hZ&lgooHaW
 
 #------------------------------ Udp input --------------------------------
 #- type: udp

@@ -2,7 +2,7 @@ version: '2.2'
 
 services:
   traefik:
-    image: "traefik:v2.1.2"
+    image: "traefik:latest"
     container_name: "traefik"
     environment:
       - "TZ=Asia/Seoul"
@@ -117,7 +117,7 @@ services:
       - discovery.seed_hosts=es-mt02,es-mt03
       - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - "ES_JAVA_OPTS=-Xms3g -Xmx3g"
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
     ulimits:
@@ -157,7 +157,7 @@ services:
       - discovery.seed_hosts=es-mt01,es-mt03
       - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - "ES_JAVA_OPTS=-Xms3g -Xmx3g"
       #- xpack.security.transport.ssl.enabled=true
       #- xpack.security.enabled=true
       - xpack.monitoring.enabled=true
@@ -199,7 +199,7 @@ services:
       - discovery.seed_hosts=es-mt01,es-mt02
       - cluster.initial_master_nodes=es-mt01,es-mt02,es-mt03
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - "ES_JAVA_OPTS=-Xms3g -Xmx3g"
       - xpack.monitoring.enabled=true
       - xpack.monitoring.collection.enabled=true
     ulimits:
@@ -506,11 +506,14 @@ services:
       - ./logstash/config/:/usr/share/logstash/config/
       - /home/operation/data/elasticsearch/logstash-idx01:/usr/share/logstash/data
       - /home/operation/data/logs/elasticsearch/logstash01:/usr/share/logstash/logs
+      #- /home/operation/app/elk-docker-compose/logstash/patterns:/usr/share/logstash/vendor/bundle/jruby/2.5.0/gems/logstash-patterns-core-4.1.2/patterns
       - ./ssl:/usr/share/logstash/ssl
     environment:
-      LS_JAVA_OPTS: "-Xmx1024m -Xms1024m"
+      LS_JAVA_OPTS: "-Xmx2048m -Xms2048m"
     networks:
       - elastic-network
+    ports:
+      - "8000:8000"
     restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-data03', 'es-kib']
     labels:
@@ -543,29 +546,29 @@ services:
       - sys_ptrace
       - dac_read_search
 
-  es-mtb02:
-    build: ./container-metricbeat
-    image: custom-metricbeat-container
-    container_name: es-mtb02
-    command: ["--strict.perms=false"]
-    user: root
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /proc:/hostfs/proc:ro
-      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
-      - /:/hostfs:ro
-      - /home/operation/data/logs/elasticsearch/metricbeat02:/usr/share/metricbeat/logs
-      - /home/operation/data/elasticsearch/metricbeat02/:/usr/share/metricbeat/data
-      - /home/operation/app/elk-docker-compose/container-metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
-    networks:
-      - elastic-network
-    restart: always
-    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
-    cap_add:
-      - sys_ptrace
-      - dac_read_search
+        #  es-mtb02:
+        #    build: ./container-metricbeat
+        #    image: custom-metricbeat-container
+        #    container_name: es-mtb02
+        #    command: ["--strict.perms=false"]
+        #    user: root
+        #    volumes:
+        #      - /etc/localtime:/etc/localtime:ro
+        #      - /var/run/docker.sock:/var/run/docker.sock:ro
+        #      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+        #      - /proc:/hostfs/proc:ro
+        #      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+        #      - /:/hostfs:ro
+        #      - /home/operation/data/logs/elasticsearch/metricbeat02:/usr/share/metricbeat/logs
+        #      - /home/operation/data/elasticsearch/metricbeat02/:/usr/share/metricbeat/data
+        #      - /home/operation/app/elk-docker-compose/container-metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+        #    networks:
+        #      - elastic-network
+        #    restart: always
+        #    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03']
+        #    cap_add:
+        #      - sys_ptrace
+        #      - dac_read_search
 
   es-htb:
     build: ./heartbeat
@@ -607,6 +610,17 @@ services:
       - elastic-network
     restart: always
     depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03', 'es-redis']
+
+#  es-crt:
+#    build: ./curator
+#    image: custom-curator
+#    container_name: es-crt
+#    #volumes:
+#    #  - /etc/localtime:/etc/localtime:ro
+#    networks:
+#      - elastic-network
+#    restart: always
+#    depends_on: ['es-mt01', 'es-mt02', 'es-mt03', 'es-cdn01', 'es-cdn02', 'es-data01', 'es-data02', 'es-kib', 'es-idx', 'es-data03', 'es-redis']
 
 networks:
   elastic-network:

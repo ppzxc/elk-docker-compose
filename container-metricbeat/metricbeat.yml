@@ -1,48 +1,48 @@
 #============================== Autodiscover ===================================
-metricbeat.autodiscover:
-  providers:
-    - type: docker
-      templates:
-        - condition:
-            contains:
-              docker.container.image: "elasticsearch"
-          config:
-            - module: elasticsearch
-              metricsets: ["node", "node_stats", "index", "index_recovery", "index_summary", "shard"]
-              period: 10s
-              hosts: ["${data.host}:9200"]
-    - type: docker
-      templates:
-        - condition:
-            contains:
-              docker.container.image: "beats"
-          config:
-            - module: beats
-              metricsets: ["stats", "state"]
-              period: 10s
-              hosts: ["${data.host}:5066"]
-    - type: docker
-      templates:
-        - condition:
-            contains:
-              docker.container.image: "kibana"
-          config:
-            - module: kibana
-              metricsets: ["status"]
-              period: 10s
-              hosts: ["${data.host}:5601"]
-              enabled: true
-    - type: docker
-      templates:
-        - condition:
-            contains:
-              docker.container.image: "logstash"
-          config:
-            - module: logstash
-              metricsets: ["node", "node_stats"]
-              period: 10s
-              hosts: ["${data.host}:9600"]
-              enabled: true
+#metricbeat.autodiscover:
+#  providers:
+#    - type: docker
+#      templates:
+#        - condition:
+#            contains:
+#              docker.container.image: "elasticsearch"
+#          config:
+#            - module: elasticsearch
+#              metricsets: ["node", "node_stats", "index", "index_recovery", "index_summary", "shard"]
+#              period: 10s
+#              hosts: ["${data.host}:9200"]
+#    - type: docker
+#      templates:
+#        - condition:
+#            contains:
+#              docker.container.image: "beats"
+#          config:
+#            - module: beats
+#              metricsets: ["stats", "state"]
+#              period: 10s
+#              hosts: ["${data.host}:5066"]
+#    - type: docker
+#      templates:
+#        - condition:
+#            contains:
+#              docker.container.image: "kibana"
+#          config:
+#            - module: kibana
+#              metricsets: ["status"]
+#              period: 10s
+#              hosts: ["${data.host}:5601"]
+#              enabled: true
+#    - type: docker
+#      templates:
+#        - condition:
+#            contains:
+#              docker.container.image: "logstash"
+#          config:
+#            - module: logstash
+#              metricsets: ["node", "node_stats"]
+#              period: 10s
+#              hosts: ["${data.host}:9600"]
+#              enabled: true
 
               #      templates:
               #        - condition:

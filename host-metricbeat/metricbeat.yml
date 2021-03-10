@@ -10,16 +10,16 @@ metricbeat.modules:
     - process         # Per process metrics
     - process_summary # Process summary
     - uptime          # System Uptime
-    - socket_summary  # Socket summary
+    #- socket_summary  # Socket summary
     - core           # Per CPU core usage
     - diskio         # Disk IO
     - filesystem     # File system usage for each mountpoint
     - fsstat         # File system summary metrics
     #- raid           # Raid
     #- socket         # Sockets and connection info (linux only)
-    - uptime
+    #- uptime
   enabled: true
-  period: 5s
+  period: 10s
   processes: ['.*']
 
   cpu.metrics:  ["percentages","normalized_percentages"]    
@@ -27,8 +27,8 @@ metricbeat.modules:
   #filesystem.ignore_types: []
   process.include_top_n:
     enabled: true
-    by_cpu: 30
-    by_memory: 30
+    by_cpu: 10
+    by_memory: 10
   #process.cmdline.cache.enabled: true
   process.cgroups.enabled: true
   #process.env.whitelist: []

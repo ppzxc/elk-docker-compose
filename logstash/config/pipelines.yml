@@ -1,3 +1,5 @@
+#- pipeline.id: nmap
+#  path.config: "/usr/share/logstash/config/pipelines/nmap.conf"
 - pipeline.id: filebeat
   # pipeline.workers: 32
   #pipeline.batch.size: 500
